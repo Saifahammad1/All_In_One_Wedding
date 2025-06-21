@@ -1,12 +1,7 @@
 <?php
 session_start();
+require_once 'config.php'; // Include the config file
 header('Content-Type: application/json');
-
-// Database configuration
-$host = 'localhost';
-$dbname = 'all_in_one_wedding';
-$username = 'your_db_username';
-$password = 'your_db_password';
 
 try {
     // Create PDO connection
