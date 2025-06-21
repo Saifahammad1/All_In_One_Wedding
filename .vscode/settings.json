@@ -1,0 +1,6 @@
+{
+    "php.validate.executablePath": "C:\\xampp\\php\\php.exe",
+    "php.executablePath": "C:\\xampp\\php\\php.exe",
+    "liveServer.settings.port": 3000,
+    "liveServer.settings.CustomBrowser": "chrome"
+}
