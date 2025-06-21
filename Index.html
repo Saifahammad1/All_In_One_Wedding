@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All in One Wedding - Your Perfect Day Starts Here</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 600px;
+        }
+
+        .logo-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><defs><pattern id="hearts" patternUnits="userSpaceOnUse" width="40" height="40"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="400" height="400" fill="url(%23hearts)"/></svg>');
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .logo-content {
+            text-align: center;
+            color: white;
+            z-index: 2;
+            position: relative;
+        }
+
+        .logo-image {
+            width: 200px;
+            height: 200px;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .logo-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .logo-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .form-section {
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .form-title {
+            font-size: 2.2rem;
+            color: #333;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-subtitle {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .login-form {
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-label {
+            position: absolute;
+            left: 20px;
+            top: 15px;
+            color: #666;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            background: #f8f9fa;
+            padding: 0 5px;
+        }
+
+        .form-input:focus + .form-label,
+        .form-input:not(:placeholder-shown) + .form-label {
+            top: -10px;
+            font-size: 12px;
+            color: #667eea;
+            background: white;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .form-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .form-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+
+        .form-links a:hover {
+            color: #764ba2;
+        }
+
+        .error-message {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message {
+            background: #efe;
+            border: 1px solid #cfc;
+            color: #363;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+            }
+            
+            .logo-section {
+                display: none;
+            }
+            
+            .form-section {
+                padding: 40px 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo-section">
+            <div class="logo-content">
+                <img class="logo-image" src="All in one Wedding logo.png" alt="All in One Wedding Logo">
+                <h1 class="logo-title">All in One Wedding</h1>
+                <p class="logo-subtitle">Where Dreams Become Reality</p>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <div class="form-header">
+                <h2 class="form-title">Love Planned Perfectly</h2>
+                <p class="form-subtitle">Sign in to plan your perfect wedding day</p>
+            </div>
+            
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+            
+            <form class="login-form" id="loginForm" method="POST" action="Login.php">
+                <div class="form-group">
+                    <input type="email" class="form-input" id="email" name="email" placeholder=" " required>
+                    <label class="form-label" for="email">Email Address</label>
+                </div>
+                
+                <div class="form-group">
+                    <input type="password" class="form-input" id="password" name="password" placeholder=" " required>
+                    <label class="form-label" for="password">Password</label>
+                </div>
+                
+                <button type="submit" class="login-btn">Sign In to Your Wedding Journey</button>
+                
+                <div class="form-links">
+                    <a href="forgot-password.php">Forgot Password?</a>
+                    <span>|</span>
+                    <a href="register.php">Create New Account</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            
+            // Hide previous messages
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            // Basic validation
+            if (!email || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showError('Please enter a valid email address');
+                return;
+            }
+            
+            // Submit form data
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('password', password);
+            
+            fetch('login.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess('Login successful! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = data.redirect || 'dashboard.php';
+                    }, 1500);
+                } else {
+                    showError(data.message || 'Login failed. Please try again.');
+                }
+            })
+            .catch(error => {
+                showError('Connection error. Please try again.');
+                console.error('Error:', error);
+            });
+        });
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+        
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        // Add floating animation to form inputs
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateY(-2px)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body>
+</html>
