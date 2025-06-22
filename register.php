@@ -1,7 +1,6 @@
 <?php
 session_start();
 require_once 'config.php'; // Include the config file
-header('Content-Type: application/json');
 
 try {
     // Create PDO connection

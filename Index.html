@@ -217,6 +217,15 @@
             display: none;
         }
 
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .loading .login-btn {
+            background: linear-gradient(135deg, #ccc 0%, #999 100%);
+        }
+
         @media (max-width: 768px) {
             .login-container {
                 grid-template-columns: 1fr;
@@ -252,7 +261,7 @@
             <div id="errorMessage" class="error-message"></div>
             <div id="successMessage" class="success-message"></div>
             
-            <form class="login-form" id="loginForm" method="POST" action="Login.php">
+            <form class="login-form" id="loginForm" method="POST" action="login.php">
                 <div class="form-group">
                     <input type="email" class="form-input" id="email" name="email" placeholder=" " required>
                     <label class="form-label" for="email">Email Address</label>
@@ -268,7 +277,7 @@
                 <div class="form-links">
                     <a href="forgot-password.php">Forgot Password?</a>
                     <span>|</span>
-                    <a href="register.php">Create New Account</a>
+                    <a href="Register.html">Create New Account</a>
                 </div>
             </form>
         </div>
@@ -282,6 +291,7 @@
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('errorMessage');
             const successDiv = document.getElementById('successMessage');
+            const formSection = document.querySelector('.form-section');
             
             // Hide previous messages
             errorDiv.style.display = 'none';
@@ -298,6 +308,9 @@
                 return;
             }
             
+            // Show loading state
+            formSection.classList.add('loading');
+            
             // Submit form data
             const formData = new FormData();
             formData.append('email', email);
@@ -307,8 +320,14 @@
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                formSection.classList.remove('loading');
                 if (data.success) {
                     showSuccess('Login successful! Redirecting...');
                     setTimeout(() => {
@@ -319,8 +338,19 @@
                 }
             })
             .catch(error => {
-                showError('Connection error. Please try again.');
-                console.error('Error:', error);
+                formSection.classList.remove('loading');
+                console.error('Fetch error:', error);
+                
+                // More specific error messages
+                if (error.message.includes('404')) {
+                    showError('Login script not found. Please check if login.php exists.');
+                } else if (error.message.includes('500')) {
+                    showError('Server error. Please check your PHP configuration.');
+                } else if (error.name === 'TypeError') {
+                    showError('Cannot connect to server. Please check if your web server is running.');
+                } else {
+                    showError('Connection error. Please try again.');
+                }
             });
         });
         
@@ -328,12 +358,14 @@
             const errorDiv = document.getElementById('errorMessage');
             errorDiv.textContent = message;
             errorDiv.style.display = 'block';
+            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
         
         function showSuccess(message) {
             const successDiv = document.getElementById('successMessage');
             successDiv.textContent = message;
             successDiv.style.display = 'block';
+            successDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
         
         function isValidEmail(email) {

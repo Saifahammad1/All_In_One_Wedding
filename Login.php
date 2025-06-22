@@ -1,129 +1,110 @@
 <?php
 session_start();
 require_once 'config.php'; // Include the config file
-header('Content-Type: application/json');
-
 try {
-    // Create PDO connection
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Database connection failed'
-    ]);
-    exit;
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
+    // Create connection
+    $conn = new mysqli($servername, $username, $password, $dbname);
     
-    // Validate input
-    if (empty($email) || empty($password)) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Please fill in all fields'
-        ]);
-        exit;
+    // Check connection
+    if ($conn->connect_error) {
+        throw new Exception("Connection failed: " . $conn->connect_error);
     }
     
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Please enter a valid email address'
-        ]);
-        exit;
-    }
-    
-    try {
-        // Check if user exists and get user data
-        $stmt = $pdo->prepare("
-            SELECT id, email, password_hash, first_name, last_name, 
-                   is_active, email_verified, created_at, last_login
-            FROM users 
-            WHERE email = ? AND is_active = 1
-        ");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
+    // Check if form was submitted
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $email = $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
         
-        if ($user && password_verify($password, $user['password_hash'])) {
-            // Check if email is verified
-            if (!$user['email_verified']) {
+        // Validate input
+        if (empty($email) || empty($password)) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Please fill in all fields'
+            ]);
+            exit;
+        }
+        
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Please enter a valid email address'
+            ]);
+            exit;
+        }
+        
+        // Prepare and execute query
+        // UPDATE TABLE NAME: Replace 'users' with your actual table name
+        $stmt = $conn->prepare("SELECT id, email, password, first_name, last_name FROM users WHERE email = ?");
+        
+        if (!$stmt) {
+            throw new Exception("Prepare failed: " . $conn->error);
+        }
+        
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows == 1) {
+            $user = $result->fetch_assoc();
+            
+            // Verify password
+            // If you're using password_hash(), use password_verify()
+            if (password_verify($password, $user['password'])) {
+                // Password is correct
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['user_email'] = $user['email'];
+                $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
+                $_SESSION['logged_in'] = true;
+                
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Login successful',
+                    'redirect' => 'dashboard.php'
+                ]);
+            } 
+            // If you're storing plain text passwords (NOT RECOMMENDED), use this instead:
+            elseif ($password === $user['password']) {
+                // Plain text password match (INSECURE - should be changed)
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['user_email'] = $user['email'];
+                $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
+                $_SESSION['logged_in'] = true;
+                
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Login successful',
+                    'redirect' => 'dashboard.php'
+                ]);
+            }
+            else {
                 echo json_encode([
                     'success' => false,
-                    'message' => 'Please verify your email address before logging in'
+                    'message' => 'Invalid email or password'
                 ]);
-                exit;
             }
-            
-            // Update last login time
-            $updateStmt = $pdo->prepare("
-                UPDATE users 
-                SET last_login = CURRENT_TIMESTAMP 
-                WHERE id = ?
-            ");
-            $updateStmt->execute([$user['id']]);
-            
-            // Set session variables
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_email'] = $user['email'];
-            $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
-            $_SESSION['login_time'] = time();
-            
-            // Log successful login
-            $logStmt = $pdo->prepare("
-                INSERT INTO login_logs (user_id, ip_address, user_agent, login_time) 
-                VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-            ");
-            $logStmt->execute([
-                $user['id'],
-                $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-                $_SERVER['HTTP_USER_AGENT'] ?? 'unknown'
-            ]);
-            
-            echo json_encode([
-                'success' => true,
-                'message' => 'Login successful',
-                'redirect' => 'dashboard.php',
-                'user' => [
-                    'id' => $user['id'],
-                    'email' => $user['email'],
-                    'name' => $user['first_name'] . ' ' . $user['last_name']
-                ]
-            ]);
-            
         } else {
-            // Log failed login attempt
-            $failedStmt = $pdo->prepare("
-                INSERT INTO failed_logins (email, ip_address, user_agent, attempt_time) 
-                VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-            ");
-            $failedStmt->execute([
-                $email,
-                $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-                $_SERVER['HTTP_USER_AGENT'] ?? 'unknown'
-            ]);
-            
             echo json_encode([
                 'success' => false,
                 'message' => 'Invalid email or password'
             ]);
         }
         
-    } catch (PDOException $e) {
-        error_log("Login error: " . $e->getMessage());
+        $stmt->close();
+    } else {
         echo json_encode([
             'success' => false,
-            'message' => 'An error occurred. Please try again.'
+            'message' => 'Invalid request method'
         ]);
     }
     
-} else {
+} catch (Exception $e) {
     echo json_encode([
         'success' => false,
-        'message' => 'Invalid request method'
+        'message' => 'Database error: ' . $e->getMessage()
     ]);
+} finally {
+    if (isset($conn)) {
+        $conn->close();
+    }
 }
 ?>
