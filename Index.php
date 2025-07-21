@@ -1,3 +1,128 @@
+<?php
+require_once 'config.php'; // Include the config file
+// Prevent any output before JSON response
+ob_start();
+
+// Disable HTML error display for AJAX requests
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    ini_set('display_errors', 0);
+    error_reporting(E_ALL);
+}
+
+session_start();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Clear any previous output
+    ob_clean();
+    
+    header('Content-Type: application/json');
+    
+    try {
+        // Check if config.php exists
+        if (!file_exists('config.php')) {
+            echo json_encode([
+                'success' => false, 
+                'message' => 'Configuration file missing. Please create config.php with database settings.'
+            ]);
+            exit;
+        }
+        
+        require_once 'config.php';
+        
+        // Check if database variables are defined
+        if (!isset($host) || !isset($dbname) || !isset($username) || !isset($password)) {
+            echo json_encode([
+                'success' => false, 
+                'message' => 'Database configuration incomplete in config.php'
+            ]);
+            exit;
+        }
+        
+        $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        
+        $email = $_POST['email'] ?? '';
+        $password_input = $_POST['password'] ?? '';
+        $user_type = $_POST['user_type'] ?? '';
+        
+        if (empty($email) || empty($password_input) || empty($user_type)) {
+            echo json_encode(['success' => false, 'message' => 'Please fill in all fields']);
+            exit;
+        }
+        
+        // Query based on user type
+        $table_map = [
+            'admin' => 'admins',
+            'bride_groom' => 'customers',
+            'vendor' => 'vendors'
+        ];
+        
+        if (!isset($table_map[$user_type])) {
+            echo json_encode(['success' => false, 'message' => 'Invalid user type']);
+            exit;
+        }
+        
+        $table = $table_map[$user_type];
+        
+        // Check if table exists
+        $stmt = $pdo->prepare("SHOW TABLES LIKE ?");
+        $stmt->execute([$table]);
+        if ($stmt->rowCount() === 0) {
+            echo json_encode([
+                'success' => false, 
+                'message' => "Database table '$table' does not exist. Please run database setup."
+            ]);
+            exit;
+        }
+        
+        $stmt = $pdo->prepare("SELECT * FROM $table WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($user && password_verify($password_input, $user['password'])) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user_type'] = $user_type;
+            $_SESSION['user_name'] = $user['name'] ?? ($user['first_name'] . ' ' . $user['last_name']);
+            
+            // Redirect based on user type
+            $redirects = [
+                'admin' => 'Admin_Dashboard.php',
+                'bride_groom' => 'Customer_Dashboard.php',
+                'vendor' => 'Vendor_Dashboard.php'
+            ];
+            
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Login successful!',
+                'redirect' => $redirects[$user_type]
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Invalid email or password']);
+        }
+        
+    } catch (PDOException $e) {
+        $error_message = 'Database connection failed';
+        
+        // Provide more specific error messages for common issues
+        if (strpos($e->getMessage(), 'Access denied') !== false) {
+            $error_message = 'Database access denied. Check username/password in config.php';
+        } elseif (strpos($e->getMessage(), 'Unknown database') !== false) {
+            $error_message = 'Database does not exist. Please create the database first.';
+        } elseif (strpos($e->getMessage(), 'Connection refused') !== false) {
+            $error_message = 'Cannot connect to database server. Is MySQL running?';
+        }
+        
+        echo json_encode(['success' => false, 'message' => $error_message]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Server error occurred']);
+    }
+    exit;
+}
+
+// Clear output buffer for HTML page
+ob_end_clean();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,7 +155,7 @@
             max-width: 1000px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            min-height: 600px;
+            min-height: 650px;
         }
 
         .logo-section {
@@ -158,6 +283,67 @@
             background: white;
         }
 
+        .user-type-group {
+            margin-bottom: 25px;
+        }
+
+        .user-type-label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .user-type-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .user-type-option {
+            position: relative;
+        }
+
+        .user-type-input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .user-type-card {
+            display: block;
+            padding: 15px 10px;
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .user-type-card:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .user-type-input:checked + .user-type-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .user-type-icon {
+            font-size: 20px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
         .login-btn {
             width: 100%;
             padding: 15px;
@@ -239,6 +425,11 @@
             .form-section {
                 padding: 40px 30px;
             }
+
+            .user-type-options {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
         }
     </style>
 </head>
@@ -261,7 +452,34 @@
             <div id="errorMessage" class="error-message"></div>
             <div id="successMessage" class="success-message"></div>
             
-            <form class="login-form" id="loginForm" method="POST" action="login.php">
+            <form class="login-form" id="loginForm" method="POST">
+                <div class="user-type-group">
+                    <label class="user-type-label">I am a:</label>
+                    <div class="user-type-options">
+                        <div class="user-type-option">
+                            <input type="radio" id="admin" name="user_type" value="admin" class="user-type-input">
+                            <label for="admin" class="user-type-card">
+                                <span class="user-type-icon">⚙️</span>
+                                Admin
+                            </label>
+                        </div>
+                        <div class="user-type-option">
+                            <input type="radio" id="bride_groom" name="user_type" value="bride_groom" class="user-type-input" checked>
+                            <label for="bride_groom" class="user-type-card">
+                                <span class="user-type-icon">💑</span>
+                                Bride & Groom
+                            </label>
+                        </div>
+                        <div class="user-type-option">
+                            <input type="radio" id="vendor" name="user_type" value="vendor" class="user-type-input">
+                            <label for="vendor" class="user-type-card">
+                                <span class="user-type-icon">🏢</span>
+                                Vendor
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <input type="email" class="form-input" id="email" name="email" placeholder=" " required>
                     <label class="form-label" for="email">Email Address</label>
@@ -275,9 +493,9 @@
                 <button type="submit" class="login-btn">Sign In to Your Wedding Journey</button>
                 
                 <div class="form-links">
-                    <a href="forgot-password.php">Forgot Password?</a>
+                    <a href="Forgot_Password.php">Forgot Password?</a>
                     <span>|</span>
-                    <a href="Register.html">Create New Account</a>
+                    <a href="register.php">Create New Account</a>
                 </div>
             </form>
         </div>
@@ -289,6 +507,7 @@
             
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const userType = document.querySelector('input[name="user_type"]:checked')?.value;
             const errorDiv = document.getElementById('errorMessage');
             const successDiv = document.getElementById('successMessage');
             const formSection = document.querySelector('.form-section');
@@ -298,8 +517,8 @@
             successDiv.style.display = 'none';
             
             // Basic validation
-            if (!email || !password) {
-                showError('Please fill in all fields');
+            if (!email || !password || !userType) {
+                showError('Please fill in all fields and select your user type');
                 return;
             }
             
@@ -315,12 +534,19 @@
             const formData = new FormData();
             formData.append('email', email);
             formData.append('password', password);
+            formData.append('user_type', userType);
             
-            fetch('login.php', {
+            fetch(window.location.href, {
                 method: 'POST',
                 body: formData
             })
             .then(response => {
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server returned non-JSON response. Check server configuration.');
+                }
+                
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -331,7 +557,7 @@
                 if (data.success) {
                     showSuccess('Login successful! Redirecting...');
                     setTimeout(() => {
-                        window.location.href = data.redirect || 'dashboard.php';
+                        window.location.href = data.redirect || 'Dashboard.php';
                     }, 1500);
                 } else {
                     showError(data.message || 'Login failed. Please try again.');
@@ -340,17 +566,7 @@
             .catch(error => {
                 formSection.classList.remove('loading');
                 console.error('Fetch error:', error);
-                
-                // More specific error messages
-                if (error.message.includes('404')) {
-                    showError('Login script not found. Please check if login.php exists.');
-                } else if (error.message.includes('500')) {
-                    showError('Server error. Please check your PHP configuration.');
-                } else if (error.name === 'TypeError') {
-                    showError('Cannot connect to server. Please check if your web server is running.');
-                } else {
-                    showError('Connection error. Please try again.');
-                }
+                showError(error.message || 'Connection error. Please try again.');
             });
         });
         
@@ -382,6 +598,31 @@
             input.addEventListener('blur', function() {
                 this.parentElement.style.transform = 'translateY(0)';
             });
+        });
+
+        // Update form label behavior for floating labels
+        document.querySelectorAll('.form-input').forEach(input => {
+            const checkLabel = () => {
+                const label = input.nextElementSibling;
+                if (input.value !== '' || input === document.activeElement) {
+                    label.style.top = '-10px';
+                    label.style.fontSize = '12px';
+                    label.style.color = '#667eea';
+                    label.style.background = 'white';
+                } else {
+                    label.style.top = '15px';
+                    label.style.fontSize = '16px';
+                    label.style.color = '#666';
+                    label.style.background = '#f8f9fa';
+                }
+            };
+            
+            input.addEventListener('focus', checkLabel);
+            input.addEventListener('blur', checkLabel);
+            input.addEventListener('input', checkLabel);
+            
+            // Initial check
+            checkLabel();
         });
     </script>
 </body>

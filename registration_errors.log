@@ -1,0 +1,84 @@
+[2025-07-21 13:44:49] Database connection successful
+[2025-07-21 13:44:49] Invalid request method: GET
+[2025-07-21 13:44:53] Database connection successful
+[2025-07-21 13:44:53] Invalid request method: GET
+[2025-07-21 13:45:30] Database connection successful
+[2025-07-21 13:45:30] Invalid request method: GET
+[2025-07-21 13:46:12] Database connection successful
+[2025-07-21 13:46:12] Invalid request method: GET
+[2025-07-21 13:46:50] Database connection successful
+[2025-07-21 13:46:50] Registration attempt started Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"(018) 581-25221","weddingDate":"2025-08-05","guestCount":"500","businessName":"","businessType":"","serviceArea":"","password":"Saif7243","confirmPassword":"Saif7243","newsletter":"1","terms":"on"}
+[2025-07-21 13:46:50] Basic fields extracted Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","newsletter":1}
+[2025-07-21 13:46:50] Couple fields extracted Context: {"weddingDate":"2025-08-05","guestCount":"500"}
+[2025-07-21 13:46:50] All validation passed
+[2025-07-21 13:46:50] Email availability check passed
+[2025-07-21 13:46:50] Preparing to insert customer Context: {"firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","weddingDate":"2025-08-05","guestCount":500}
+[2025-07-21 13:46:50] Customer inserted successfully Context: {"customerId":"4"}
+[2025-07-21 13:46:50] Attempting to send verification email Context: {"email":"ahammadsaif@gmail.com","firstName":"Saif","userType":"couple"}
+[2025-07-21 13:46:52] Email sending result Context: {"success":false}
+[2025-07-21 13:46:52] Verification email sent Context: {"success":false}
+[2025-07-21 13:46:52] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-21 13:48:55] Database connection successful
+[2025-07-21 13:48:55] Registration attempt started Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"(018) 581-25221","weddingDate":"2025-08-05","guestCount":"500","businessName":"","businessType":"","serviceArea":"","password":"Saif7243","confirmPassword":"Saif7243","newsletter":"1","terms":"on"}
+[2025-07-21 13:48:55] Basic fields extracted Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","newsletter":1}
+[2025-07-21 13:48:55] Couple fields extracted Context: {"weddingDate":"2025-08-05","guestCount":"500"}
+[2025-07-21 13:48:55] All validation passed
+[2025-07-21 13:48:55] Email availability check passed
+[2025-07-21 13:48:55] Preparing to insert customer Context: {"firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","weddingDate":"2025-08-05","guestCount":500}
+[2025-07-21 13:48:55] Customer inserted successfully Context: {"customerId":"5"}
+[2025-07-21 13:48:55] Attempting to send verification email Context: {"email":"ahammadsaif@gmail.com","firstName":"Saif","userType":"couple"}
+[2025-07-21 13:48:57] Email sending result Context: {"success":false}
+[2025-07-21 13:48:57] Verification email sent Context: {"success":false}
+[2025-07-21 13:48:57] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-21 13:49:50] Database connection successful
+[2025-07-21 13:49:50] Registration attempt started Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"(018) 581-25221","weddingDate":"2025-08-05","guestCount":"500","businessName":"","businessType":"","serviceArea":"","password":"Saif7243","confirmPassword":"Saif7243","newsletter":"1","terms":"on"}
+[2025-07-21 13:49:50] Basic fields extracted Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","newsletter":1}
+[2025-07-21 13:49:50] Couple fields extracted Context: {"weddingDate":"2025-08-05","guestCount":"500"}
+[2025-07-21 13:49:50] All validation passed
+[2025-07-21 13:49:50] Email already exists Context: {"email":"ahammadsaif@gmail.com"}
+[2025-07-21 13:50:56] Database connection successful
+[2025-07-21 13:50:56] Registration attempt started Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"(018) 581-25221","weddingDate":"2025-08-05","guestCount":"500","businessName":"","businessType":"","serviceArea":"","password":"Saif7243","confirmPassword":"Saif7243","newsletter":"1","terms":"on"}
+[2025-07-21 13:50:56] Basic fields extracted Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","newsletter":1}
+[2025-07-21 13:50:56] Couple fields extracted Context: {"weddingDate":"2025-08-05","guestCount":"500"}
+[2025-07-21 13:50:56] All validation passed
+[2025-07-21 13:50:56] Email already exists Context: {"email":"ahammadsaif@gmail.com"}
+[2025-07-21 13:51:09] Database connection successful
+[2025-07-21 13:51:09] Registration attempt started Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"(018) 581-25221","weddingDate":"2025-08-05","guestCount":"500","businessName":"","businessType":"","serviceArea":"","password":"Saif7243","confirmPassword":"Saif7243","newsletter":"1","terms":"on"}
+[2025-07-21 13:51:09] Basic fields extracted Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","newsletter":1}
+[2025-07-21 13:51:09] Couple fields extracted Context: {"weddingDate":"2025-08-05","guestCount":"500"}
+[2025-07-21 13:51:09] All validation passed
+[2025-07-21 13:51:09] Email availability check passed
+[2025-07-21 13:51:09] Preparing to insert customer Context: {"firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","weddingDate":"2025-08-05","guestCount":500}
+[2025-07-21 13:51:09] Customer inserted successfully Context: {"customerId":"6"}
+[2025-07-21 13:51:09] Attempting to send verification email Context: {"email":"ahammadsaif@gmail.com","firstName":"Saif","userType":"couple"}
+[2025-07-21 13:51:11] Email sending result Context: {"success":false}
+[2025-07-21 13:51:11] Verification email sent Context: {"success":false}
+[2025-07-21 13:51:11] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-21 13:51:18] Database connection successful
+[2025-07-21 13:51:18] Registration attempt started Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"(018) 581-25221","weddingDate":"2025-08-05","guestCount":"500","businessName":"","businessType":"","serviceArea":"","password":"Saif7243","confirmPassword":"Saif7243","newsletter":"1","terms":"on"}
+[2025-07-21 13:51:18] Basic fields extracted Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","newsletter":1}
+[2025-07-21 13:51:18] Couple fields extracted Context: {"weddingDate":"2025-08-05","guestCount":"500"}
+[2025-07-21 13:51:18] All validation passed
+[2025-07-21 13:51:18] Email already exists Context: {"email":"ahammadsaif@gmail.com"}
+[2025-07-21 13:59:50] Database connection successful
+[2025-07-21 13:59:50] Invalid request method: GET
+[2025-07-21 14:00:21] Database connection successful
+[2025-07-21 14:00:21] Registration attempt started Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"(018) 581-25221","weddingDate":"2025-07-30","guestCount":"","businessName":"","businessType":"","serviceArea":"","password":"Saif7243","confirmPassword":"Saif7243","newsletter":"1","terms":"on"}
+[2025-07-21 14:00:21] Basic fields extracted Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","newsletter":1}
+[2025-07-21 14:00:21] Couple fields extracted Context: {"weddingDate":"2025-07-30","guestCount":""}
+[2025-07-21 14:00:21] All validation passed
+[2025-07-21 14:00:21] Email availability check passed
+[2025-07-21 14:00:21] Preparing to insert customer Context: {"firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","weddingDate":"2025-07-30","guestCount":null}
+[2025-07-21 14:00:21] Customer inserted successfully Context: {"customerId":"7"}
+[2025-07-21 14:00:21] Attempting to send verification email Context: {"email":"ahammadsaif@gmail.com","firstName":"Saif","userType":"couple"}
+[2025-07-21 14:00:23] Email sending result Context: {"success":false}
+[2025-07-21 14:00:23] Verification email sent Context: {"success":false}
+[2025-07-21 14:00:23] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-21 14:00:26] Database connection successful
+[2025-07-21 14:00:26] Registration attempt started Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"(018) 581-25221","weddingDate":"2025-07-30","guestCount":"","businessName":"","businessType":"","serviceArea":"","password":"Saif7243","confirmPassword":"Saif7243","newsletter":"1","terms":"on"}
+[2025-07-21 14:00:26] Basic fields extracted Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","newsletter":1}
+[2025-07-21 14:00:26] Couple fields extracted Context: {"weddingDate":"2025-07-30","guestCount":""}
+[2025-07-21 14:00:26] All validation passed
+[2025-07-21 14:00:26] Email already exists Context: {"email":"ahammadsaif@gmail.com"}
+[2025-07-21 14:26:43] Database connection successful
+[2025-07-21 14:26:43] Invalid request method: GET
