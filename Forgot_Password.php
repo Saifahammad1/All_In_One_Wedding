@@ -1,197 +1,324 @@
 <?php
-// forgot-password.php
-
-// Prevent any output before JSON response
-ob_start();
-
-// Disable HTML error display for AJAX requests on POST requests
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    ini_set('display_errors', 0);
-    error_reporting(E_ALL);
-}
-
+require_once 'config.php'; 
+// forgot_password_handler.php
 session_start();
 
-// Include the configuration file
-if (!file_exists('config.php')) {
-    // This error will be caught by the client-side fetch if it's a POST request
-    // For GET requests (initial page load), it will just continue to the HTML
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'Configuration file missing. Please create config.php with database and email settings.']);
-        exit;
+
+// Get JSON input
+$input = json_decode(file_get_contents('php://input'), true);
+$action = $input['action'] ?? '';
+
+try {
+    switch ($action) {
+        case 'send_verification':
+            handleSendVerification($input);
+            break;
+        case 'verify_code':
+            handleVerifyCode($input);
+            break;
+        case 'reset_password':
+            handleResetPassword($input);
+            break;
     }
-}
-require_once 'config.php';
-
-// Include PHPMailer classes
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-// Ensure PHPMailer is loaded
-require_once __DIR__ . '/vendor/autoload.php'; // Use Composer's autoloader
-
-// Ensure PHPMailer is loaded
-require_once __DIR__ . '/vendor/autoload.php'; // Use Composer's autoloader
-
-// If not using Composer, manually include the PHPMailer files:
-// require_once 'path/to/PHPMailer/src/Exception.php';
-// require_once 'path/to/PHPMailer/src/PHPMailer.php';
-// require_once 'path/to/PHPMailer/src/SMTP.php';
-
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Clear any previous output
-    ob_clean();
-    
-    header('Content-Type: application/json');
-    
-    try {
-        // Check if database variables are defined from config.php
-        if (!isset($host) || !isset($dbname) || !isset($username) || !isset($password)) {
-            echo json_encode(['success' => false, 'message' => 'Database configuration incomplete in config.php']);
-            exit;
-        }
-
-        $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
-        $email = $_POST['email'] ?? '';
-        
-        if (empty($email)) {
-            echo json_encode(['success' => false, 'message' => 'Please enter your email address.']);
-            exit;
-        }
-
-        // Validate email format
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            echo json_encode(['success' => false, 'message' => 'Please enter a valid email address.']);
-            exit;
-        }
-
-        // Check all potential user tables for the email
-        $user_found = false;
-        $user_table = '';
-        $user_id = null;
-        $user_name = '';
-
-        $tables_to_check = ['admins', 'customers', 'vendors']; // Add or remove tables as needed
-
-        foreach ($tables_to_check as $table) {
-            // Check if table exists before querying
-            $stmt_check_table = $pdo->prepare("SHOW TABLES LIKE ?");
-            $stmt_check_table->execute([$table]);
-            if ($stmt_check_table->rowCount() === 0) {
-                // Table doesn't exist, skip to next
-                continue;
-            }
-
-            $stmt = $pdo->prepare("SELECT id, email, name, first_name, last_name FROM $table WHERE email = ?");
-            $stmt->execute([$email]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($user) {
-                $user_found = true;
-                $user_table = $table;
-                $user_id = $user['id'];
-                $user_name = $user['name'] ?? ($user['first_name'] . ' ' . $user['last_name']);
-                break; // User found, no need to check other tables
-            }
-        }
-
-        if (!$user_found) {
-            echo json_encode(['success' => false, 'message' => 'No account found with that email address.']);
-            exit;
-        }
-
-        // Generate a unique token
-        $token = bin2hex(random_bytes(32)); // 64 character hex string
-        $expires = date("Y-m-d H:i:s", strtotime('+1 hour')); // Token valid for 1 hour
-
-        // Store token in a password_resets table
-        // Create this table if it doesn't exist:
-        // CREATE TABLE password_resets (
-        //     id INT AUTO_INCREMENT PRIMARY KEY,
-        //     email VARCHAR(255) NOT NULL,
-        //     token VARCHAR(64) NOT NULL,
-        //     expires DATETIME NOT NULL,
-        //     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        //     INDEX (token),
-        //     INDEX (email)
-        // );
-        // You might also want to add a user_id and user_type column for better tracking
-        // ALTER TABLE password_resets ADD COLUMN user_id INT, ADD COLUMN user_type VARCHAR(50);
-
-        // Delete any existing tokens for this email to prevent multiple valid tokens
-        $stmt_delete = $pdo->prepare("DELETE FROM password_resets WHERE email = ?");
-        $stmt_delete->execute([$email]);
-
-        $stmt_insert = $pdo->prepare("INSERT INTO password_resets (email, token, expires, user_id, user_type) VALUES (?, ?, ?, ?, ?)");
-        $stmt_insert->execute([$email, $token, $expires, $user_id, $user_table]);
-        
-        // Send email using PHPMailer
-        // Ensure PHPMailer is properly initialized
-        require 'path/to/PHPMailer/src/Exception.php';
-        require 'path/to/PHPMailer/src/PHPMailer.php';
-        require 'path/to/PHPMailer/src/SMTP.php';
-
-        $mail = new PHPMailer(true); // true enables exceptions
-        try {
-            // Server settings (from config.php)
-            $mail->isSMTP();
-            $mail->Host       = $smtp_host;
-            $mail->SMTPAuth   = true;
-            $mail->Username   = $smtp_username;
-            $mail->Password   = $smtp_password;
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // Use ENCRYPTION_SMTPS for port 465
-            $mail->Port       = $smtp_port;
-
-            // Recipients
-            $mail->setFrom($smtp_from_email, $smtp_from_name);
-            $mail->addAddress($email, $user_name); // Add a recipient
-
-            // Content
-            $mail->isHTML(true);
-            $mail->Subject = 'Password Reset Request for All in One Wedding';
-            $reset_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]/reset-password.php?email=" . urlencode($email) . "&token=" . urlencode($token);
-            $mail->Body    = "
-                <p>Dear $user_name,</p>
-                <p>We received a request to reset your password for your All in One Wedding account.</p>
-                <p>To reset your password, please click on the link below:</p>
-                <p><a href=\"$reset_link\">$reset_link</a></p>
-                <p>This link will expire in 1 hour.</p>
-                <p>If you did not request a password reset, please ignore this email.</p>
-                <p>Thank you,<br>The All in One Wedding Team</p>
-            ";
-            $mail->AltBody = "Dear $user_name,\n\nWe received a request to reset your password for your All in One Wedding account. To reset your password, please visit the following link: $reset_link\n\nThis link will expire in 1 hour.\n\nIf you did not request a password reset, please ignore this email.\n\nThank you,\nThe All in One Wedding Team";
-
-            $mail->send();
-            echo json_encode(['success' => true, 'message' => 'A password reset link has been sent to your email address. Please check your inbox (and spam folder).']);
-        } catch (PDOException $e) {
-            // Log the error for debugging, but provide a generic message to the user
-            error_log("Mailer Error: {$mail->ErrorInfo}");
-            echo json_encode(['success' => false, 'message' => 'Could not send reset email. Please try again later.']);
-        }
-        
-    } catch (PDOException $e) {
-        $error_message = 'Database connection failed';
-        if (strpos($e->getMessage(), 'Access denied') !== false) {
-            $error_message = 'Database access denied. Check username/password in config.php';
-        } elseif (strpos($e->getMessage(), 'Unknown database') !== false) {
-            $error_message = 'Database does not exist. Please create the database first.';
-        } elseif (strpos($e->getMessage(), 'Connection refused') !== false) {
-            $error_message = 'Cannot connect to database server. Is MySQL running?';
-        }
-        echo json_encode(['success' => false, 'message' => $error_message]);
-    } catch (PDOException $e) {
-        // Catch any other general exceptions
-        echo json_encode(['success' => false, 'message' => 'Server error occurred: ' . $e->getMessage()]);
-    }
-    exit;
+} catch (Exception $e) {
+    http_response_code(400);
+    echo json_encode(['error' => $e->getMessage()]);
 }
 
-// Clear output buffer for HTML page if it's a GET request
-ob_end_clean();
+function handleSendVerification($input) {
+    global $pdo; // Assuming PDO connection from your config
+    
+    $email = filter_var($input['email'] ?? '', FILTER_VALIDATE_EMAIL);
+    $userType = $input['user_type'] ?? '';
+    
+    if (!$email) {
+        throw new Exception('Invalid email address');
+    }
+    
+    if (!in_array($userType, ['admin', 'bride_groom', 'vendor'])) {
+        throw new Exception('Invalid user type');
+    }
+    
+    // Check if user exists in the appropriate table
+    $user = findUserByEmailAndType($email, $userType);
+    
+    if (!$user) {
+        throw new Exception('User not found for the selected account type');
+    }
+    
+    // Generate verification code
+    $verificationCode = sprintf('%06d', mt_rand(0, 999999));
+    $expiresAt = date('Y-m-d H:i:s', time() + 600); // 10 minutes
+    
+    // Store verification code in database
+    storeVerificationCode($email, $userType, $verificationCode, $expiresAt);
+    
+    // Send email
+    if (sendVerificationEmail($email, $verificationCode, $user['name'] ?? 'User')) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Verification code sent successfully'
+        ]);
+    } else {
+        throw new Exception('Failed to send verification email');
+    }
+}
+
+function handleVerifyCode($input) {
+    global $pdo;
+    
+    $email = filter_var($input['email'] ?? '', FILTER_VALIDATE_EMAIL);
+    $userType = $input['user_type'] ?? '';
+    $code = $input['verification_code'] ?? '';
+    
+    if (!$email || !$userType || !$code) {
+        throw new Exception('Missing required fields');
+    }
+    
+    // Verify the code
+    $stmt = $pdo->prepare("
+        SELECT * FROM password_reset_tokens 
+        WHERE email = ? AND user_type = ? AND verification_code = ? 
+        AND expires_at > NOW() AND used = 0
+    ");
+    $stmt->execute([$email, $userType, $code]);
+    $token = $stmt->fetch();
+    
+    if (!$token) {
+        throw new Exception('Invalid or expired verification code');
+    }
+    
+    // Generate reset token
+    $resetToken = bin2hex(random_bytes(32));
+    $resetExpiresAt = date('Y-m-d H:i:s', time() + 1800); // 30 minutes
+    
+    // Update the record with reset token
+    $stmt = $pdo->prepare("
+        UPDATE password_reset_tokens 
+        SET reset_token = ?, reset_expires_at = ?, verified = 1 
+        WHERE id = ?
+    ");
+    $stmt->execute([$resetToken, $resetExpiresAt, $token['id']]);
+    
+    echo json_encode([
+        'success' => true,
+        'message' => 'Code verified successfully',
+        'reset_token' => $resetToken
+    ]);
+}
+
+function handleResetPassword($input) {
+    global $pdo;
+    
+    $email = filter_var($input['email'] ?? '', FILTER_VALIDATE_EMAIL);
+    $userType = $input['user_type'] ?? '';
+    $resetToken = $input['reset_token'] ?? '';
+    $newPassword = $input['new_password'] ?? '';
+    
+    if (!$email || !$userType || !$resetToken || !$newPassword) {
+        throw new Exception('Missing required fields');
+    }
+    
+    // Validate password strength
+    if (!isStrongPassword($newPassword)) {
+        throw new Exception('Password does not meet security requirements');
+    }
+    
+    // Verify reset token
+    $stmt = $pdo->prepare("
+        SELECT * FROM password_reset_tokens 
+        WHERE email = ? AND user_type = ? AND reset_token = ? 
+        AND reset_expires_at > NOW() AND verified = 1 AND used = 0
+    ");
+    $stmt->execute([$email, $userType, $resetToken]);
+    $token = $stmt->fetch();
+    
+    if (!$token) {
+        throw new Exception('Invalid or expired reset token');
+    }
+    
+    // Hash the new password
+    $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+    
+    // Update user password in appropriate table
+    $updated = updateUserPassword($email, $userType, $hashedPassword);
+    
+    if (!$updated) {
+        throw new Exception('Failed to update password');
+    }
+    
+    // Mark token as used
+    $stmt = $pdo->prepare("UPDATE password_reset_tokens SET used = 1 WHERE id = ?");
+    $stmt->execute([$token['id']]);
+    
+    // Send confirmation email
+    sendPasswordResetConfirmationEmail($email, $token['user_name'] ?? 'User');
+    
+    echo json_encode([
+        'success' => true,
+        'message' => 'Password reset successfully'
+    ]);
+}
+
+function findUserByEmailAndType($email, $userType) {
+    global $pdo;
+    
+    $table = '';
+    $nameField = 'name';
+    
+    switch ($userType) {
+        case 'admin':
+            $table = 'admins';
+            break;
+        case 'bride_groom':
+            $table = 'couples'; // or whatever your couples table is named
+            $nameField = 'bride_name'; // adjust based on your schema
+            break;
+        case 'vendor':
+            $table = 'vendors';
+            $nameField = 'business_name'; // adjust based on your schema
+            break;
+        default:
+            return null;
+    }
+    
+    $stmt = $pdo->prepare("SELECT id, email, {$nameField} as name FROM {$table} WHERE email = ?");
+    $stmt->execute([$email]);
+    return $stmt->fetch();
+}
+
+function storeVerificationCode($email, $userType, $code, $expiresAt) {
+    global $pdo;
+    
+    // Get user name for the email
+    $user = findUserByEmailAndType($email, $userType);
+    $userName = $user['name'] ?? '';
+    
+    // Delete any existing unused tokens for this email and user type
+    $stmt = $pdo->prepare("DELETE FROM password_reset_tokens WHERE email = ? AND user_type = ? AND used = 0");
+    $stmt->execute([$email, $userType]);
+    
+    // Insert new verification code
+    $stmt = $pdo->prepare("
+        INSERT INTO password_reset_tokens 
+        (email, user_type, user_name, verification_code, expires_at, created_at) 
+        VALUES (?, ?, ?, ?, ?, NOW())
+    ");
+    $stmt->execute([$email, $userType, $userName, $code, $expiresAt]);
+}
+
+function updateUserPassword($email, $userType, $hashedPassword) {
+    global $pdo;
+    
+    $table = '';
+    switch ($userType) {
+        case 'admin':
+            $table = 'admins';
+            break;
+        case 'bride_groom':
+            $table = 'couples';
+            break;
+        case 'vendor':
+            $table = 'vendors';
+            break;
+        default:
+            return false;
+    }
+    
+    $stmt = $pdo->prepare("UPDATE {$table} SET password = ? WHERE email = ?");
+    return $stmt->execute([$hashedPassword, $email]);
+}
+
+function sendVerificationEmail($email, $code, $userName) {
+    $subject = "Password Reset Verification Code - All in One Wedding";
+    $message = "
+    <html>
+    <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+        <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+            <div style='text-align: center; margin-bottom: 30px;'>
+                <h1 style='color: #667eea;'>All in One Wedding</h1>
+            </div>
+            
+            <h2>Password Reset Request</h2>
+            <p>Hello {$userName},</p>
+            <p>You requested to reset your password. Please use the verification code below:</p>
+            
+            <div style='background: #f8f9fa; padding: 20px; text-align: center; margin: 20px 0;'>
+                <h1 style='color: #667eea; letter-spacing: 5px; margin: 0;'>{$code}</h1>
+            </div>
+            
+            <p><strong>Important:</strong></p>
+            <ul>
+                <li>This code will expire in 10 minutes</li>
+                <li>Do not share this code with anyone</li>
+                <li>If you didn't request this, please ignore this email</li>
+            </ul>
+            
+            <p>Best regards,<br>All in One Wedding Team</p>
+        </div>
+    </body>
+    </html>
+    ";
+    
+    $headers = "MIME-Version: 1.0" . "\r\n";
+    $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+    $headers .= "From: noreply@allinone-wedding.com" . "\r\n";
+    
+    return mail($email, $subject, $message, $headers);
+}
+
+function sendPasswordResetConfirmationEmail($email, $userName) {
+    $subject = "Password Reset Successful - All in One Wedding";
+    $message = "
+    <html>
+    <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+        <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+            <div style='text-align: center; margin-bottom: 30px;'>
+                <h1 style='color: #667eea;'>All in One Wedding</h1>
+            </div>
+            
+            <h2>Password Reset Successful</h2>
+            <p>Hello {$userName},</p>
+            <p>Your password has been successfully reset. You can now log in with your new password.</p>
+            
+            <p>If you didn't make this change, please contact our support team immediately.</p>
+            
+            <p>Best regards,<br>All in One Wedding Team</p>
+        </div>
+    </body>
+    </html>
+    ";
+    
+    $headers = "MIME-Version: 1.0" . "\r\n";
+    $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+    $headers .= "From: noreply@allinone-wedding.com" . "\r\n";
+    
+    return mail($email, $subject, $message, $headers);
+}
+
+function isStrongPassword($password) {
+    // Check minimum length
+    if (strlen($password) < 8) {
+        return false;
+    }
+    
+    // Check for uppercase letter
+    if (!preg_match('/[A-Z]/', $password)) {
+        return false;
+    }
+    
+    // Check for lowercase letter
+    if (!preg_match('/[a-z]/', $password)) {
+        return false;
+    }
+    
+    // Check for number
+    if (!preg_match('/\d/', $password)) {
+        return false;
+    }
+    
+    return true;
+}
 ?>
 
 <!DOCTYPE html>
@@ -223,19 +350,32 @@ ob_end_clean();
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
             width: 100%;
-            max-width: 500px;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 650px;
+            transition: all 0.3s ease;
             position: relative;
-        }
-
-        .header-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 40px 30px;
-            text-align: center;
-            position: relative;
+            color: #333;
+            font-size: 16px;
+            font-weight: 400;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             overflow: hidden;
         }
 
-        .header-section::before {
+        .logo-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            color: white;
+            
+        }
+
+        .logo-section::before {
             content: '';
             position: absolute;
             top: -50%;
@@ -251,121 +391,98 @@ ob_end_clean();
             100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
-        .header-content {
-            position: relative;
-            z-index: 2;
+        .logo-content {
+            text-align: center;
             color: white;
-        }
-
-        .header-icon {
-            font-size: 4rem;
-            margin-bottom: 15px;
-            display: block;
-            opacity: 0.9;
-        }
-
-        .header-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header-subtitle {
-            font-size: 1rem;
-            opacity: 0.9;
-            font-weight: 300;
-        }
-
-        .form-section {
-            padding: 40px 30px;
-        }
-
-        .step-indicator {
+            z-index: 2;
+            position: relative;
+            padding: 40px 20px;
             display: flex;
+            flex-direction: column;
+            align-items: center;
             justify-content: center;
-            margin-bottom: 30px;
+            width: 100%;
+            height: 100%;
         }
 
-        .step {
-            width: 30px;
-            height: 30px;
+        .logo-image {
+            width: 200px;
+            height: 200px;
+            margin-bottom: 20px;
             border-radius: 50%;
-            background: #e1e5e9;
+            opacity: 0.9;
+            background: rgba(255,255,255,0.1);
+            font-size: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 10px;
-            font-size: 14px;
-            font-weight: bold;
-            color: #666;
-            transition: all 0.3s ease;
+            background-image: url('All in one Wedding logo.png');
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            transform: scale(1.05);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+
         }
 
-        .step.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .logo-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             color: white;
-        }
-
-        .step.completed {
-            background: #28a745;
-            color: white;
-        }
-
-        .step::after {
-            content: '';
-            position: absolute;
-            width: 40px;
-            height: 2px;
-            background: #e1e5e9;
-            left: 100%;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: -1;
-        }
-
-        .step:last-child::after {
-            display: none;
-        }
-
-        .step.completed::after {
-            background: #28a745;
-        }
-
-        .form-step {
-            display: none;
-        }
-
-        .form-step.active {
-            display: block;
-            animation: slideIn 0.3s ease-in-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .step-title {
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
             text-align: center;
+        }
+
+        .logo-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-section {
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .form-title {
+            font-size: 2.2rem;
             color: #333;
-            margin-bottom: 15px;
-            font-size: 1.4rem;
-            font-weight: 600;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .step-description {
-            text-align: center;
+        .form-subtitle {
             color: #666;
-            margin-bottom: 30px;
-            font-size: 0.95rem;
+            font-size: 1rem;
             line-height: 1.5;
+        }
+
+        .forgot-password-form {
+            width: 100%;
         }
 
         .form-group {
@@ -419,7 +536,6 @@ ob_end_clean();
             font-weight: 600;
             margin-bottom: 15px;
             font-size: 14px;
-            text-align: center;
         }
 
         .user-type-options {
@@ -471,7 +587,7 @@ ob_end_clean();
             display: block;
         }
 
-        .action-btn {
+        .reset-btn {
             width: 100%;
             padding: 15px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -482,32 +598,23 @@ ob_end_clean();
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
-        .action-btn:hover:not(:disabled) {
+        .reset-btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
         }
 
-        .action-btn:active {
+        .reset-btn:active {
             transform: translateY(0);
         }
 
-        .action-btn:disabled {
+        .reset-btn:disabled {
             background: linear-gradient(135deg, #ccc 0%, #999 100%);
             cursor: not-allowed;
-        }
-
-        .back-btn {
-            background: transparent;
-            color: #667eea;
-            border: 2px solid #667eea;
-        }
-
-        .back-btn:hover {
-            background: #667eea;
-            color: white;
+            transform: none;
+            box-shadow: none;
         }
 
         .form-links {
@@ -518,37 +625,44 @@ ob_end_clean();
         .form-links a {
             color: #667eea;
             text-decoration: none;
+            margin: 0 10px;
             transition: color 0.3s ease;
+            cursor: pointer;
         }
 
         .form-links a:hover {
             color: #764ba2;
         }
 
-        .message {
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            display: none;
-        }
-
         .error-message {
             background: #fee;
             border: 1px solid #fcc;
             color: #c33;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
         }
 
         .success-message {
             background: #efe;
             border: 1px solid #cfc;
             color: #363;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
         }
 
         .info-message {
-            background: #e7f3ff;
-            border: 1px solid #b3d9ff;
-            color: #0066cc;
+            background: #e8f4fd;
+            border: 1px solid #b8daff;
+            color: #004085;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.5;
         }
 
         .loading {
@@ -556,136 +670,166 @@ ob_end_clean();
             pointer-events: none;
         }
 
-        .verification-code-input {
-            text-align: center;
-            font-size: 20px;
-            font-weight: bold;
-            letter-spacing: 5px;
-            font-family: 'Courier New', monospace;
+        .loading .reset-btn {
+            background: linear-gradient(135deg, #ccc 0%, #999 100%);
         }
 
-        .password-strength {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 12px;
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e1e5e9;
+            margin: 0 5px;
             transition: all 0.3s ease;
         }
 
-        .strength-weak {
-            background: #fee;
-            color: #c33;
-            border: 1px solid #fcc;
+        .step.active {
+            background: #667eea;
+            transform: scale(1.2);
         }
 
-        .strength-medium {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
+        .password-requirements {
+            background: #f8f9fa;
+            border: 1px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
         }
 
-        .strength-strong {
-            background: #efe;
-            color: #363;
-            border: 1px solid #cfc;
-        }
-
-        .resend-code {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 14px;
+        .requirement {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
             color: #666;
         }
 
-        .resend-link {
-            color: #667eea;
-            text-decoration: none;
-            cursor: pointer;
+        .requirement.valid {
+            color: #28a745;
         }
 
-        .resend-link:hover {
+        .requirement-icon {
+            margin-right: 8px;
+            font-size: 12px;
+        }
+
+        .back-to-login {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .back-to-login a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            transition: color 0.3s ease;
+        }
+
+        .back-to-login a:hover {
             color: #764ba2;
         }
 
-        .resend-link:disabled {
-            color: #ccc;
-            cursor: not-allowed;
+        .back-to-login a::before {
+            content: '← ';
+            margin-right: 5px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         @media (max-width: 768px) {
             .forgot-password-container {
-                margin: 10px;
+                grid-template-columns: 1fr;
+                max-width: 400px;
+                min-height: auto;
+                padding: 20px;
+            }
+            
+            .logo-section {
+                display: none;
             }
             
             .form-section {
-                padding: 30px 20px;
+                padding: 40px 30px;
             }
 
             .user-type-options {
                 grid-template-columns: 1fr;
                 gap: 8px;
             }
-
-            .step-indicator {
-                margin-bottom: 20px;
-            }
-
-            .step {
-                width: 25px;
-                height: 25px;
-                font-size: 12px;
-                margin: 0 5px;
-            }
         }
     </style>
 </head>
 <body>
     <div class="forgot-password-container">
-        <div class="header-section">
-            <div class="header-content">
-                <span class="header-icon">🔐</span>
-                <h1 class="header-title">Forgot Password</h1>
-                <p class="header-subtitle">Don't worry, we'll help you reset it</p>
+        <div class="logo-section">
+            <div class="logo-content">
+                <img class="logo-image" src="All in one Wedding logo.png" alt="All in One Wedding Logo">
+                <h1 class="logo-title">All in One Wedding</h1>
+                <p class="logo-subtitle">Secure Account Recovery</p>
             </div>
         </div>
         
         <div class="form-section">
             <div class="step-indicator">
-                <div class="step active" data-step="1">1</div>
-                <div class="step" data-step="2">2</div>
-                <div class="step" data-step="3">3</div>
+                <div class="step active" id="step1"></div>
+                <div class="step" id="step2"></div>
+                <div class="step" id="step3"></div>
             </div>
 
-            <div id="errorMessage" class="message error-message"></div>
-            <div id="successMessage" class="message success-message"></div>
-            <div id="infoMessage" class="message info-message"></div>
+            <div class="form-header">
+                <h2 class="form-title" id="formTitle">Reset Your Password</h2>
+                <p class="form-subtitle" id="formSubtitle">Enter your email address and select your account type to receive a password reset link</p>
+            </div>
+            
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
             
             <!-- Step 1: Email and User Type -->
-            <div class="form-step active" id="step1">
-                <h2 class="step-title">Identify Your Account</h2>
-                <p class="step-description">Enter your email address and select your account type to begin the password reset process.</p>
-                
-                <form id="emailForm">
+            <div id="step1Form" class="form-step">
+                <form class="forgot-password-form" id="emailForm">
                     <div class="user-type-group">
                         <label class="user-type-label">I am a:</label>
                         <div class="user-type-options">
                             <div class="user-type-option">
-                                <input type="radio" id="admin_reset" name="user_type" value="admin" class="user-type-input">
-                                <label for="admin_reset" class="user-type-card">
+                                <input type="radio" id="admin" name="user_type" value="admin" class="user-type-input">
+                                <label for="admin" class="user-type-card">
                                     <span class="user-type-icon">⚙️</span>
                                     Admin
                                 </label>
                             </div>
                             <div class="user-type-option">
-                                <input type="radio" id="bride_groom_reset" name="user_type" value="bride_groom" class="user-type-input" checked>
-                                <label for="bride_groom_reset" class="user-type-card">
+                                <input type="radio" id="bride_groom" name="user_type" value="bride_groom" class="user-type-input" checked>
+                                <label for="bride_groom" class="user-type-card">
                                     <span class="user-type-icon">💑</span>
                                     Bride & Groom
                                 </label>
                             </div>
                             <div class="user-type-option">
-                                <input type="radio" id="vendor_reset" name="user_type" value="vendor" class="user-type-input">
-                                <label for="vendor_reset" class="user-type-card">
+                                <input type="radio" id="vendor" name="user_type" value="vendor" class="user-type-input">
+                                <label for="vendor" class="user-type-card">
                                     <span class="user-type-icon">🏢</span>
                                     Vendor
                                 </label>
@@ -697,58 +841,78 @@ ob_end_clean();
                         <input type="email" class="form-input" id="email" name="email" placeholder=" " required>
                         <label class="form-label" for="email">Email Address</label>
                     </div>
-                    
-                    <button type="submit" class="action-btn" id="sendCodeBtn">Send Verification Code</button>
-                </form>
 
-                <div class="form-links">
-                    <a href="index.php">← Back to Login</a>
-                </div>
+                    <div class="info-message">
+                        📧 We'll send a secure verification code to your email address to verify your identity before allowing you to reset your password.
+                    </div>
+                    
+                    <button type="submit" class="reset-btn" id="sendCodeBtn">Send Verification Code</button>
+                </form>
             </div>
 
             <!-- Step 2: Verification Code -->
-            <div class="form-step" id="step2">
-                <h2 class="step-title">Enter Verification Code</h2>
-                <p class="step-description">We've sent a 6-digit verification code to your email address. Please check your inbox and spam folder.</p>
-                
-                <form id="verificationForm">
+            <div id="step2Form" class="form-step" style="display: none;">
+                <form class="forgot-password-form" id="verificationForm">
                     <div class="form-group">
-                        <input type="text" class="form-input verification-code-input" id="verificationCode" name="verification_code" placeholder=" " maxlength="6" required>
+                        <input type="text" class="form-input" id="verificationCode" name="verification_code" placeholder=" " required maxlength="6">
                         <label class="form-label" for="verificationCode">Verification Code</label>
                     </div>
-                    
-                    <button type="submit" class="action-btn" id="verifyCodeBtn">Verify Code</button>
-                    <button type="button" class="action-btn back-btn" onclick="goToStep(1)">Back</button>
-                </form>
 
-                <div class="resend-code">
-                    <span>Didn't receive the code?</span>
-                    <a href="#" class="resend-link" id="resendCode">Resend Code</a>
-                    <span id="resendTimer" style="display: none;"></span>
-                </div>
+                    <div class="info-message">
+                        📱 Enter the 6-digit verification code sent to your email address. The code will expire in 10 minutes.
+                    </div>
+                    
+                    <button type="submit" class="reset-btn" id="verifyCodeBtn">Verify Code</button>
+                    
+                    <div class="form-links">
+                        <a href="#" id="resendCode">Didn't receive the code? Resend</a>
+                    </div>
+                </form>
             </div>
 
             <!-- Step 3: New Password -->
-            <div class="form-step" id="step3">
-                <h2 class="step-title">Create New Password</h2>
-                <p class="step-description">Choose a strong password for your account. Make sure it's at least 8 characters long.</p>
-                
-                <form id="passwordForm">
+            <div id="step3Form" class="form-step" style="display: none;">
+                <form class="forgot-password-form" id="passwordForm">
                     <div class="form-group">
                         <input type="password" class="form-input" id="newPassword" name="new_password" placeholder=" " required>
                         <label class="form-label" for="newPassword">New Password</label>
                     </div>
-                    
-                    <div id="passwordStrength" class="password-strength" style="display: none;"></div>
-                    
+
                     <div class="form-group">
                         <input type="password" class="form-input" id="confirmPassword" name="confirm_password" placeholder=" " required>
                         <label class="form-label" for="confirmPassword">Confirm New Password</label>
                     </div>
+
+                    <div class="password-requirements">
+                        <strong>Password Requirements:</strong>
+                        <div class="requirement" id="lengthReq">
+                            <span class="requirement-icon">○</span>
+                            At least 8 characters long
+                        </div>
+                        <div class="requirement" id="uppercaseReq">
+                            <span class="requirement-icon">○</span>
+                            Contains uppercase letter
+                        </div>
+                        <div class="requirement" id="lowercaseReq">
+                            <span class="requirement-icon">○</span>
+                            Contains lowercase letter
+                        </div>
+                        <div class="requirement" id="numberReq">
+                            <span class="requirement-icon">○</span>
+                            Contains number
+                        </div>
+                        <div class="requirement" id="matchReq">
+                            <span class="requirement-icon">○</span>
+                            Passwords match
+                        </div>
+                    </div>
                     
-                    <button type="submit" class="action-btn" id="resetPasswordBtn">Reset Password</button>
-                    <button type="button" class="action-btn back-btn" onclick="goToStep(2)">Back</button>
+                    <button type="submit" class="reset-btn" id="resetPasswordBtn" disabled>Reset Password</button>
                 </form>
+            </div>
+
+            <div class="back-to-login">
+                <a href="index.php" id="backToLogin">Back to Login</a>
             </div>
         </div>
     </div>
@@ -757,380 +921,358 @@ ob_end_clean();
         let currentStep = 1;
         let userEmail = '';
         let userType = '';
-        let verificationToken = '';
-        let resendTimer = null;
-        let resendCountdown = 0;
+        let resetToken = '';
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeFloatingLabels();
+        // API endpoint - adjust this to match your server setup
+        const API_ENDPOINT = 'forgot_password_handler.php';
+
+        // Form elements
+        const emailForm = document.getElementById('emailForm');
+        const verificationForm = document.getElementById('verificationForm');
+        const passwordForm = document.getElementById('passwordForm');
+        const errorDiv = document.getElementById('errorMessage');
+        const successDiv = document.getElementById('successMessage');
+        const formSection = document.querySelector('.form-section');
+
+        // Step 1: Email submission
+        emailForm.addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            // Email form submission
-            document.getElementById('emailForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                handleEmailSubmission();
-            });
-
-            // Verification form submission
-            document.getElementById('verificationForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                handleVerificationSubmission();
-            });
-
-            // Password form submission
-            document.getElementById('passwordForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                handlePasswordReset();
-            });
-
-            // Password strength checker
-            document.getElementById('newPassword').addEventListener('input', checkPasswordStrength);
-
-            // Resend code functionality
-            document.getElementById('resendCode').addEventListener('click', function(e) {
-                e.preventDefault();
-                handleResendCode();
-            });
-
-            // Auto-format verification code
-            document.getElementById('verificationCode').addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\D/g, '');
-                e.target.value = value;
-            });
+            const email = document.getElementById('email').value;
+            const selectedUserType = document.querySelector('input[name="user_type"]:checked')?.value;
+            
+            if (!email || !selectedUserType) {
+                showError('Please fill in all fields and select your user type');
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showError('Please enter a valid email address');
+                return;
+            }
+            
+            userEmail = email;
+            userType = selectedUserType;
+            
+            sendVerificationCode(email, selectedUserType);
         });
 
-        function handleEmailSubmission() {
-            const email = document.getElementById('email').value.trim();
-            const userTypeElement = document.querySelector('input[name="user_type"]:checked');
+        // Step 2: Verification code submission
+        verificationForm.addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            if (!email || !userTypeElement) {
-                showMessage('error', 'Please fill in all fields and select your account type');
-                return;
-            }
-
-            if (!isValidEmail(email)) {
-                showMessage('error', 'Please enter a valid email address');
-                return;
-            }
-
-            userEmail = email;
-            userType = userTypeElement.value;
-
-            setLoading('sendCodeBtn', true);
-            hideMessages();
-
-            const formData = new FormData();
-            formData.append('action', 'send_code');
-            formData.append('email', email);
-            formData.append('user_type', userType);
-
-            fetch('forgot-password.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                setLoading('sendCodeBtn', false);
-                if (data.success) {
-                    showMessage('success', 'Verification code sent successfully! Check your email.');
-                    goToStep(2);
-                    startResendTimer();
-                } else {
-                    showMessage('error', data.message || 'Failed to send verification code. Please try again.');
-                }
-            })
-            .catch(error => {
-                setLoading('sendCodeBtn', false);
-                console.error('Error:', error);
-                showMessage('error', 'Connection error. Please try again.');
-            });
-        }
-
-        function handleVerificationSubmission() {
-            const code = document.getElementById('verificationCode').value.trim();
+            const code = document.getElementById('verificationCode').value;
             
             if (!code || code.length !== 6) {
-                showMessage('error', 'Please enter the complete 6-digit verification code');
+                showError('Please enter the 6-digit verification code');
                 return;
             }
+            
+            verifyCode(code);
+        });
 
-            setLoading('verifyCodeBtn', true);
-            hideMessages();
-
-            const formData = new FormData();
-            formData.append('action', 'verify_code');
-            formData.append('email', userEmail);
-            formData.append('user_type', userType);
-            formData.append('verification_code', code);
-
-            fetch('forgot-password.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                setLoading('verifyCodeBtn', false);
-                if (data.success) {
-                    verificationToken = data.token;
-                    showMessage('success', 'Code verified successfully!');
-                    goToStep(3);
-                } else {
-                    showMessage('error', data.message || 'Invalid verification code. Please try again.');
-                }
-            })
-            .catch(error => {
-                setLoading('verifyCodeBtn', false);
-                console.error('Error:', error);
-                showMessage('error', 'Connection error. Please try again.');
-            });
-        }
-
-        function handlePasswordReset() {
+        // Step 3: Password reset submission
+        passwordForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-
-            if (newPassword.length < 8) {
-                showMessage('error', 'Password must be at least 8 characters long');
+            
+            if (!validatePassword(newPassword, confirmPassword)) {
                 return;
             }
+            
+            resetPassword(newPassword);
+        });
 
-            if (newPassword !== confirmPassword) {
-                showMessage('error', 'Passwords do not match');
-                return;
-            }
+        // Resend code functionality
+        document.getElementById('resendCode').addEventListener('click', function(e) {
+            e.preventDefault();
+            sendVerificationCode(userEmail, userType, true);
+        });
 
-            if (getPasswordStrength(newPassword) === 'weak') {
-                showMessage('error', 'Please choose a stronger password');
-                return;
-            }
-
-            setLoading('resetPasswordBtn', true);
+        async function sendVerificationCode(email, userType, isResend = false) {
+            const button = document.getElementById('sendCodeBtn');
+            setButtonLoading(button, true);
             hideMessages();
+            
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'send_verification',
+                        email: email,
+                        user_type: userType
+                    })
+                });
 
-            const formData = new FormData();
-            formData.append('action', 'reset_password');
-            formData.append('email', userEmail);
-            formData.append('user_type', userType);
-            formData.append('token', verificationToken);
-            formData.append('new_password', newPassword);
+                const data = await response.json();
 
-            fetch('forgot-password.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                setLoading('resetPasswordBtn', false);
-                if (data.success) {
-                    showMessage('success', 'Password reset successful! You can now login with your new password.');
-                    setTimeout(() => {
-                        window.location.href = 'index.php';
-                    }, 3000);
+                if (response.ok && data.success) {
+                    showSuccess(isResend ? 'Verification code resent successfully!' : 'Verification code sent to your email!');
+                    if (!isResend) {
+                        nextStep();
+                    }
                 } else {
-                    showMessage('error', data.message || 'Failed to reset password. Please try again.');
+                    throw new Error(data.error || 'Failed to send verification code');
                 }
-            })
-            .catch(error => {
-                setLoading('resetPasswordBtn', false);
-                console.error('Error:', error);
-                showMessage('error', 'Connection error. Please try again.');
-            });
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                setButtonLoading(button, false);
+            }
         }
 
-        function handleResendCode() {
-            if (resendCountdown > 0) {
-                return;
-            }
+        async function verifyCode(code) {
+            const button = document.getElementById('verifyCodeBtn');
+            setButtonLoading(button, true);
+            hideMessages();
+            
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'verify_code',
+                        email: userEmail,
+                        user_type: userType,
+                        verification_code: code
+                    })
+                });
 
-            const resendLink = document.getElementById('resendCode');
-            resendLink.style.pointerEvents = 'none';
-            resendLink.style.color = '#ccc';
+                const data = await response.json();
 
-            const formData = new FormData();
-            formData.append('action', 'send_code');
-            formData.append('email', userEmail);
-            formData.append('user_type', userType);
-
-            fetch('forgot-password.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showMessage('info', 'New verification code sent!');
-                    startResendTimer();
+                if (response.ok && data.success) {
+                    showSuccess('Code verified successfully!');
+                    resetToken = data.reset_token;
+                    nextStep();
                 } else {
-                    showMessage('error', data.message || 'Failed to resend code');
-                    resendLink.style.pointerEvents = 'auto';
-                    resendLink.style.color = '#667eea';
+                    throw new Error(data.error || 'Invalid verification code');
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showMessage('error', 'Connection error. Please try again.');
-                resendLink.style.pointerEvents = 'auto';
-                resendLink.style.color = '#667eea';
-            });
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                setButtonLoading(button, false);
+            }
         }
 
-        function startResendTimer() {
-            resendCountdown = 60;
-            const resendLink = document.getElementById('resendCode');
-            const resendTimerElement = document.getElementById('resendTimer');
+        async function resetPassword(newPassword) {
+            const button = document.getElementById('resetPasswordBtn');
+            setButtonLoading(button, true);
+            hideMessages();
             
-            resendLink.style.display = 'none';
-            resendTimerElement.style.display = 'inline';
-            
-            resendTimer = setInterval(() => {
-                resendCountdown--;
-                resendTimerElement.textContent = `(${resendCountdown}s)`;
-                
-                if (resendCountdown <= 0) {
-                    clearInterval(resendTimer);
-                    resendLink.style.display = 'inline';
-                    resendLink.style.pointerEvents = 'auto';
-                    resendLink.style.color = '#667eea';
-                    resendTimerElement.style.display = 'none';
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'reset_password',
+                        email: userEmail,
+                        user_type: userType,
+                        reset_token: resetToken,
+                        new_password: newPassword
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showSuccess('Password reset successfully! You can now login with your new password.');
+                    
+                    // Change the back to login text
+                    const backToLogin = document.getElementById('backToLogin');
+                    backToLogin.textContent = 'Continue to Login';
+                    backToLogin.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    backToLogin.style.color = 'white';
+                    backToLogin.style.padding = '10px 20px';
+                    backToLogin.style.borderRadius = '10px';
+                    backToLogin.style.textDecoration = 'none';
+                } else {
+                    throw new Error(data.error || 'Failed to reset password');
                 }
-            }, 1000);
-        }
-
-        function checkPasswordStrength() {
-            const password = document.getElementById('newPassword').value;
-            const strengthDiv = document.getElementById('passwordStrength');
-            
-            if (password.length === 0) {
-                strengthDiv.style.display = 'none';
-                return;
-            }
-
-            const strength = getPasswordStrength(password);
-            strengthDiv.style.display = 'block';
-            
-            // Remove all strength classes
-            strengthDiv.className = 'password-strength';
-            
-            if (strength === 'weak') {
-                strengthDiv.classList.add('strength-weak');
-                strengthDiv.textContent = 'Weak password. Add numbers, special characters, and uppercase letters.';
-            } else if (strength === 'medium') {
-                strengthDiv.classList.add('strength-medium');
-                strengthDiv.textContent = 'Good password. Consider adding more variety for better security.';
-            } else {
-                strengthDiv.classList.add('strength-strong');
-                strengthDiv.textContent = 'Strong password! ✓';
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                setButtonLoading(button, false);
             }
         }
 
-        function getPasswordStrength(password) {
-            let score = 0;
-            
-            if (password.length >= 8) score++;
-            if (password.length >= 12) score++;
-            if (/[a-z]/.test(password)) score++;
-            if (/[A-Z]/.test(password)) score++;
-            if (/[0-9]/.test(password)) score++;
-            if (/[^A-Za-z0-9]/.test(password)) score++;
-            
-            if (score < 3) return 'weak';
-            if (score < 5) return 'medium';
-            return 'strong';
-        }
-
-        function goToStep(step) {
-            // Hide current step
-            document.querySelector('.form-step.active').classList.remove('active');
-            document.querySelector('.step.active').classList.remove('active');
-            
-            // Show new step
-            document.getElementById(`step${step}`).classList.add('active');
-            document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
-            
-            // Update completed steps
-            for (let i = 1; i < step; i++) {
-                document.querySelector(`.step[data-step="${i}"]`).classList.add('completed');
-            }
-            
-            currentStep = step;
-            hideMessages();
-        }
-
-        function showMessage(type, message) {
-            hideMessages();
-            const messageDiv = document.getElementById(`${type}Message`);
-            messageDiv.textContent = message;
-            messageDiv.style.display = 'block';
-            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-
-        function hideMessages() {
-            document.querySelectorAll('.message').forEach(msg => {
-                msg.style.display = 'none';
-            });
-        }
-
-        function setLoading(buttonId, isLoading) {
-            const button = document.getElementById(buttonId);
-            button.disabled = isLoading;
+        function setButtonLoading(button, isLoading) {
             if (isLoading) {
-                button.textContent = 'Processing...';
-                button.style.opacity = '0.7';
+                button.disabled = true;
+                const originalText = button.textContent;
+                button.innerHTML = '<span class="spinner"></span>' + originalText;
+                button.dataset.originalText = originalText;
             } else {
-                // Reset button text based on button
-                const originalTexts = {
-                    'sendCodeBtn': 'Send Verification Code',
-                    'verifyCodeBtn': 'Verify Code',
-                    'resetPasswordBtn': 'Reset Password'
-                };
-                button.textContent = originalTexts[buttonId] || 'Submit';
-                button.style.opacity = '1';
+                button.disabled = false;
+                button.innerHTML = button.dataset.originalText || button.textContent.replace('Loading...', '');
             }
         }
 
+        function nextStep() {
+            currentStep++;
+            updateStepIndicator();
+            showCurrentStep();
+            updateFormHeader();
+        }
+
+        function updateStepIndicator() {
+            document.querySelectorAll('.step').forEach((step, index) => {
+                if (index < currentStep) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+        }
+
+        function showCurrentStep() {
+            document.querySelectorAll('.form-step').forEach(step => {
+                step.style.display = 'none';
+            });
+            
+            document.getElementById(`step${currentStep}Form`).style.display = 'block';
+        }
+
+        function updateFormHeader() {
+            const titles = {
+                1: 'Reset Your Password',
+                2: 'Verify Your Identity',
+                3: 'Create New Password'
+            };
+            
+            const subtitles = {
+                1: 'Enter your email address and select your account type to receive a password reset link',
+                2: 'Enter the verification code sent to your email address',
+                3: 'Choose a strong password for your account'
+            };
+            
+            document.getElementById('formTitle').textContent = titles[currentStep];
+            document.getElementById('formSubtitle').textContent = subtitles[currentStep];
+        }
+
+        // Password validation
+        function validatePassword(password, confirmPassword) {
+            const requirements = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                number: /\d/.test(password),
+                match: password === confirmPassword && password.length > 0
+            };
+            
+            return Object.values(requirements).every(req => req);
+        }
+
+        // Real-time password validation
+        document.getElementById('newPassword').addEventListener('input', function() {
+            checkPasswordRequirements();
+        });
+
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            checkPasswordRequirements();
+        });
+
+        function checkPasswordRequirements() {
+            const password = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const resetBtn = document.getElementById('resetPasswordBtn');
+            
+            const requirements = {
+                lengthReq: password.length >= 8,
+                uppercaseReq: /[A-Z]/.test(password),
+                lowercaseReq: /[a-z]/.test(password),
+                numberReq: /\d/.test(password),
+                matchReq: password === confirmPassword && password.length > 0
+            };
+            
+            Object.entries(requirements).forEach(([id, isValid]) => {
+                const element = document.getElementById(id);
+                const icon = element.querySelector('.requirement-icon');
+                
+                if (isValid) {
+                    element.classList.add('valid');
+                    icon.textContent = '✓';
+                } else {
+                    element.classList.remove('valid');
+                    icon.textContent = '○';
+                }
+            });
+            
+            const allValid = Object.values(requirements).every(req => req);
+            resetBtn.disabled = !allValid;
+        }
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            successDiv.style.display = 'none';
+            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function showSuccess(message) {
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            successDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function hideMessages() {
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+        }
+        
         function isValidEmail(email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(email);
         }
+        
+        // Add floating animation to form inputs
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateY(-2px)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateY(0)';
+            });
+        });
 
-        function initializeFloatingLabels() {
-            document.querySelectorAll('.form-input').forEach(input => {
-                const checkLabel = () => {
-                    const label = input.nextElementSibling;
-                    if (label && label.classList.contains('form-label')) {
-                        if (input.value !== '' || input === document.activeElement) {
-                            label.style.top = '-10px';
-                            label.style.fontSize = '12px';
-                            label.style.color = '#667eea';
-                            label.style.background = 'white';
-                        } else {
-                            label.style.top = '15px';
-                            label.style.fontSize = '16px';
-                            label.style.color = '#666';
-                            label.style.background = '#f8f9fa';
-                        }
-                    }
-                };
-                input.addEventListener('input', checkLabel);
-                checkLabel(); // Initial check for existing values
-            });
-            document.querySelectorAll('.user-type-input').forEach(input => {
-                const checkLabel = () => {
-                    const label = input.nextElementSibling;
-                    if (label && label.classList.contains('user-type-card')) {
-                        if (input.checked) {
-                            label.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                            label.style.color = 'white';
-                        } else {
-                            label.style.background = '#f8f9fa';
-                            label.style.color = '#666';
-                        }
-                    }
-                };
-                input.addEventListener('change', checkLabel);
-                checkLabel(); // Initial check for existing values
-            });
-        }
+        // Update form label behavior for floating labels
+        document.querySelectorAll('.form-input').forEach(input => {
+            const checkLabel = () => {
+                const label = input.nextElementSibling;
+                if (input.value !== '' || input === document.activeElement) {
+                    label.style.top = '-10px';
+                    label.style.fontSize = '12px';
+                    label.style.color = '#667eea';
+                    label.style.background = 'white';
+                } else {
+                    label.style.top = '15px';
+                    label.style.fontSize = '16px';
+                    label.style.color = '#666';
+                    label.style.background = '#f8f9fa';
+                }
+            };
+            
+            input.addEventListener('focus', checkLabel);
+            input.addEventListener('blur', checkLabel);
+            input.addEventListener('input', checkLabel);
+            
+            // Initial check
+            checkLabel();
+        });
+
+        // Initialize
+        updateStepIndicator();
+        updateFormHeader();
     </script>
 </body>
 </html>

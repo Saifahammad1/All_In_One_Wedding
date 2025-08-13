@@ -1,7 +1,40 @@
 <?php
+require_once 'config.php'; // Include your database configuration
 // Ensure session is started
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
+}
+
+// Handle AJAX requests
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
+    
+    switch ($action) {
+        case 'saveProfile':
+            saveProfile();
+            exit;
+        case 'addBudgetItem':
+            addBudgetItem();
+            exit;
+        case 'addGuest':
+            addGuest();
+            exit;
+        case 'updateGuestStatus':
+            updateGuestStatus();
+            exit;
+        case 'addCustomTask':
+            addCustomTask();
+            exit;
+        case 'toggleTaskCompletion':
+            toggleTaskCompletion();
+            exit;
+    }
+}
+
+// Handle GET requests
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['getData'])) {
+    getWeddingData();
+    exit;
 }
 
 // Function to sanitize input data
@@ -24,6 +57,29 @@ function getCurrentUserId() {
         $_SESSION['user_id'] = 1; // Assign a default user ID for testing
     }
     return $_SESSION['user_id'];
+}
+
+// --- Vendor Functions (NEW) ---
+function getVendors($category = '') {
+    global $link;
+    
+    $whereClause = '';
+    if ($category) {
+        $whereClause = " WHERE category = '" . sanitize_input($category) . "'";
+    }
+    
+    $sql = "SELECT id, name, category, description, price_min, price_max, rating, contact_email, contact_phone, image_url 
+            FROM vendors" . $whereClause . " ORDER BY rating DESC, name ASC";
+    
+    $vendors = [];
+    if ($result = mysqli_query($link, $sql)) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $vendors[] = $row;
+        }
+        mysqli_free_result($result);
+    }
+    
+    return $vendors;
 }
 
 // --- Profile Functions ---
@@ -64,7 +120,7 @@ function saveProfile() {
             // Insert new profile
             $sql = "INSERT INTO profiles (user_id, bride_name, groom_name, wedding_date, total_budget, expected_guests) VALUES (?, ?, ?, ?, ?, ?)";
             if ($stmt = mysqli_prepare($link, $sql)) {
-                mysqli_stmt_bind_param($stmt, "issdsi", $userId, $brideName, $groomName, $weddingDate, $totalBudget, $expectedGuests);
+                mysqli_stmt_bind_param($stmt, "isssdi", $userId, $brideName, $groomName, $weddingDate, $totalBudget, $expectedGuests);
                 if (mysqli_stmt_execute($stmt)) {
                     echo json_encode(['success' => true, 'message' => 'Profile saved successfully.']);
                 } else {
@@ -92,7 +148,7 @@ function getWeddingData() {
         'budget' => ['items' => [], 'totalSpent' => 0],
         'guests' => [],
         'checklist' => [],
-        'vendors' => ['booked' => 0, 'total' => 6] // Static for now, can be dynamic
+        'vendors' => ['booked' => 0, 'total' => 6]
     ];
 
     // Get Profile Data
@@ -106,8 +162,8 @@ function getWeddingData() {
                 'brideName' => $brideName,
                 'groomName' => $groomName,
                 'weddingDate' => $weddingDate,
-                'totalBudget' => $totalBudget,
-                'expectedGuests' => $expectedGuests
+                'totalBudget' => (float)$totalBudget,
+                'expectedGuests' => (int)$expectedGuests
             ];
         }
         mysqli_stmt_close($stmt);
@@ -123,11 +179,11 @@ function getWeddingData() {
             $data['budget']['items'][] = [
                 'id' => $id,
                 'category' => $category,
-                'amount' => $amount,
+                'amount' => (float)$amount,
                 'description' => $description,
                 'date' => date('m/d/Y', strtotime($createdAt))
             ];
-            $data['budget']['totalSpent'] += $amount;
+            $data['budget']['totalSpent'] += (float)$amount;
         }
         mysqli_stmt_close($stmt);
     }
@@ -169,15 +225,14 @@ function getWeddingData() {
         mysqli_stmt_close($stmt);
     }
     
-    // You'd also fetch booked vendors from a 'booked_vendors' table if you had one
-    // For now, bookedVendors is static.
+    // Get booked vendors count
     $sql = "SELECT COUNT(DISTINCT vendor_category) FROM booked_vendors WHERE user_id = ?";
     if ($stmt = mysqli_prepare($link, $sql)) {
         mysqli_stmt_bind_param($stmt, "i", $userId);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $bookedVendorsCount);
         if (mysqli_stmt_fetch($stmt)) {
-            $data['vendors']['booked'] = $bookedVendorsCount;
+            $data['vendors']['booked'] = (int)$bookedVendorsCount;
         }
         mysqli_stmt_close($stmt);
     }
@@ -230,7 +285,7 @@ function addGuest() {
     $name = sanitize_input($_POST['name']);
     $email = sanitize_input($_POST['email']);
     $phone = sanitize_input($_POST['phone']);
-    $plusOne = (isset($_POST['plusOne']) && $_POST['plusOne'] === 'true') ? 1 : 0; // Convert boolean to int
+    $plusOne = (isset($_POST['plusOne']) && $_POST['plusOne'] === 'true') ? 1 : 0;
 
     if (empty($name)) {
         echo json_encode(['success' => false, 'message' => 'Guest name cannot be empty.']);
@@ -338,6 +393,122 @@ function toggleTaskCompletion() {
     }
 }
 
+// --- Vendor Functions (NEW) ---
+function bookVendor() {
+    global $link;
+    if (!isLoggedIn()) {
+        echo json_encode(['success' => false, 'message' => 'User not logged in.']);
+        return;
+    }
+
+    $userId = getCurrentUserId();
+    $vendorId = (int) sanitize_input($_POST['vendorId']);
+    $vendorCategory = sanitize_input($_POST['vendorCategory']);
+    
+    // Check if vendor already booked for this category
+    $sql_check = "SELECT id FROM booked_vendors WHERE user_id = ? AND vendor_id = ?";
+    if ($stmt_check = mysqli_prepare($link, $sql_check)) {
+        mysqli_stmt_bind_param($stmt_check, "ii", $userId, $vendorId);
+        mysqli_stmt_execute($stmt_check);
+        mysqli_stmt_store_result($stmt_check);
+        
+        if (mysqli_stmt_num_rows($stmt_check) > 0) {
+            echo json_encode(['success' => false, 'message' => 'Vendor already booked.']);
+            mysqli_stmt_close($stmt_check);
+            return;
+        }
+        mysqli_stmt_close($stmt_check);
+    }
+
+    $sql = "INSERT INTO booked_vendors (user_id, vendor_id, vendor_category, booked_at) VALUES (?, ?, ?, NOW())";
+    if ($stmt = mysqli_prepare($link, $sql)) {
+        mysqli_stmt_bind_param($stmt, "iis", $userId, $vendorId, $vendorCategory);
+        if (mysqli_stmt_execute($stmt)) {
+            echo json_encode(['success' => true, 'message' => 'Vendor booked successfully.']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Error booking vendor: ' . mysqli_error($link)]);
+        }
+        mysqli_stmt_close($stmt);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Error preparing statement: ' . mysqli_error($link)]);
+    }
+}
+
+// --- Generate Default Checklist Function ---
+function generateDefaultChecklist() {
+    global $link;
+    if (!isLoggedIn()) {
+        echo json_encode(['success' => false, 'message' => 'User not logged in.']);
+        return;
+    }
+
+    $userId = getCurrentUserId();
+    
+    // Check if user has a wedding date
+    $sql_date = "SELECT wedding_date FROM profiles WHERE user_id = ?";
+    $weddingDate = null;
+    if ($stmt = mysqli_prepare($link, $sql_date)) {
+        mysqli_stmt_bind_param($stmt, "i", $userId);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $weddingDate);
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+    }
+    
+    if (!$weddingDate) {
+        echo json_encode(['success' => false, 'message' => 'Please set your wedding date first.']);
+        return;
+    }
+    
+    // Check if checklist already exists
+    $sql_check = "SELECT COUNT(*) FROM checklist_items WHERE user_id = ?";
+    if ($stmt = mysqli_prepare($link, $sql_check)) {
+        mysqli_stmt_bind_param($stmt, "i", $userId);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $count);
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+        
+        if ($count > 0) {
+            echo json_encode(['success' => false, 'message' => 'Checklist already exists.']);
+            return;
+        }
+    }
+    
+    // Generate default checklist based on wedding date
+    $defaultTasks = [
+        ['task' => 'Book wedding venue', 'priority' => 'high', 'days_before' => 365],
+        ['task' => 'Hire wedding photographer', 'priority' => 'high', 'days_before' => 300],
+        ['task' => 'Choose and order wedding dress', 'priority' => 'high', 'days_before' => 180],
+        ['task' => 'Book catering service', 'priority' => 'high', 'days_before' => 120],
+        ['task' => 'Send wedding invitations', 'priority' => 'medium', 'days_before' => 60],
+        ['task' => 'Book makeup artist and hair stylist', 'priority' => 'medium', 'days_before' => 90],
+        ['task' => 'Order wedding cake', 'priority' => 'medium', 'days_before' => 30],
+        ['task' => 'Plan honeymoon', 'priority' => 'low', 'days_before' => 45],
+        ['task' => 'Buy wedding rings', 'priority' => 'high', 'days_before' => 90],
+        ['task' => 'Finalize guest list', 'priority' => 'high', 'days_before' => 30]
+    ];
+    
+    $sql = "INSERT INTO checklist_items (user_id, task, due_date, priority, completed) VALUES (?, ?, ?, ?, 0)";
+    if ($stmt = mysqli_prepare($link, $sql)) {
+        $successCount = 0;
+        foreach ($defaultTasks as $task) {
+            $dueDate = date('Y-m-d', strtotime($weddingDate . ' -' . $task['days_before'] . ' days'));
+            mysqli_stmt_bind_param($stmt, "isss", $userId, $task['task'], $dueDate, $task['priority']);
+            if (mysqli_stmt_execute($stmt)) {
+                $successCount++;
+            }
+        }
+        mysqli_stmt_close($stmt);
+        
+        if ($successCount > 0) {
+            echo json_encode(['success' => true, 'message' => "Generated $successCount default tasks."]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Error generating checklist.']);
+        }
+    }
+}
+
 // --- Logout Function ---
 function logout() {
     session_unset();
@@ -381,6 +552,9 @@ function logout() {
 
         .sidebar.collapsed {
             width: 60px;
+            overflow: hidden;
+            transition: width 0.3s ease;
+
         }
 
         .sidebar-header {
@@ -389,33 +563,133 @@ function logout() {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: relative;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0 0 10px 10px;
+            z-index: 1000;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0 0 10px 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1000;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0 0 10px 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1000;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0 0 10px 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1000;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0 0 10px 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1000;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0 0 10px 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1000;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0 0 10px 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1000;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0 0 10px 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1000;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0 0 10px 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1000;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0 0 10px 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1000;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0 0 10px 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1000;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0 0 10px 10px;
         }
 
         .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            text-align: center;
+            color: white;
+            z-index: 2;
+            position: relative;
+        }
+        .logo img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+        .logo img:hover {
+            transform: scale(1.1);
+        }
+        .logo:hover .logo-text {
+            opacity: 1;
+        }
+        .logo:hover img {
+            transform: scale(1.1);
         }
 
         .logo-icon {
             width: 40px;
             height: 40px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
+
         }
 
         .logo-text {
-            font-size: 1.2rem;
-            font-weight: 700;
+            font-size: 0.9rem;
+            font-weight: 500;
             transition: opacity 0.3s ease;
         }
 
         .sidebar.collapsed .logo-text {
             opacity: 0;
+            visibility: hidden;
+
         }
 
         .toggle-btn {
@@ -427,15 +701,92 @@ function logout() {
             transition: transform 0.3s ease;
             position: absolute;
             right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.1);
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);  
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            transition: all 0.3s ease;
         }
 
         .toggle-btn:hover {
             transform: translateY(-50%) scale(1.1);
         }
 
+
         .sidebar.collapsed .toggle-btn {
             right: 15px;
             transform: translateY(-50%);
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.8);
+            transition: transform 0.3s ease, color 0.3s ease;
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            z-index: 1001;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            padding: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            transition: all 0.3s ease;
+        }
+        .sidebar.collapsed .toggle-btn:before {
+            content: "\f0c9"; /* FontAwesome bars icon */
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            color: white;
+        }
+        .sidebar.collapsed .toggle-btn:after {
+            content: "\f00d"; /* FontAwesome times icon */
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            color: white;
+            display: none;
+        }
+        .sidebar.collapsed .toggle-btn:hover:before {
+            content: "\f00d"; /* Show close icon on hover */
+        }
+        .sidebar.collapsed .toggle-btn:hover:after {
+            content: "\f0c9"; /* Show menu icon on hover */
+        }
+        .sidebar.collapsed .toggle-btn:before {
+            content: "\f0c9"; /* FontAwesome bars icon */
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            color: white;
+        }
+        .sidebar.collapsed .toggle-btn:after {
+            content: "\f00d"; /* FontAwesome times icon */
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            color: white;
+            display: none;
         }
 
         .sidebar.collapsed .toggle-btn:hover {
@@ -466,6 +817,20 @@ function logout() {
             width: 40px;
             height: 40px;
             font-size: 1rem;
+            margin-bottom: 5px;
+            background: rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #fff;
+            text-transform: uppercase;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
 
         .user-name {
@@ -487,6 +852,7 @@ function logout() {
         .sidebar.collapsed .user-name,
         .sidebar.collapsed .user-role {
             opacity: 0;
+            visibility: hidden;
         }
 
         .nav-menu {
@@ -828,6 +1194,11 @@ function logout() {
 
         .logout-btn {
             position: absolute;
+            justify-content: center;
+            align-items: center;
+            display: flex;
+            width: 200px;
+            height: 50px;
             bottom: 20px;
             left: 20px;
             right: 20px;
@@ -842,12 +1213,27 @@ function logout() {
 
         .logout-btn:hover {
             background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            
         }
 
         .sidebar.collapsed .logout-btn {
             left: 10px;
             right: 10px;
             padding: 10px 5px;
+            font-size: 0.9rem;
+            justify-content: center;
+            align-items: center;
+            width: auto;
+            height: auto;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
         .empty-state {
@@ -954,10 +1340,11 @@ function logout() {
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo">
-                <div class="logo-icon">💒</div>
+                <img class="logo-image" src="All in one Wedding logo.png" alt="All in One Wedding Logo">
                 <span class="logo-text">All in One Wedding</span>
             </div>
             <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+            <button class="toggle-btn" onclick="toggleMainContent()"></button>
         </div>
         
         <div class="user-info">
@@ -1024,8 +1411,9 @@ function logout() {
                 </a>
             </li>
         </ul>
-        
-        <button class="logout-btn" onclick="logout()">👋 Sign Out</button>
+        <div class="logout-btn-container">
+            <a href="index.php" class="logout-btn">Logout</a>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -1594,26 +1982,695 @@ function logout() {
     </div>
 
     <script>
-        // Global variables for data storage
-        let weddingData = {
-            profile: {
-                brideName: '',
-                groomName: '',
-                weddingDate: '',
-                totalBudget: 0,
-                expectedGuests: 0
-            },
-            budget: {
-                items: [],
-                totalSpent: 0
-            },
-            guests: [],
-            checklist: [],
-            vendors: {
-                booked: 0,
-                total: 6
+// Global variables for data storage
+let weddingData = {
+    profile: {
+        brideName: '',
+        groomName: '',
+        weddingDate: '',
+        totalBudget: 0,
+        expectedGuests: 0
+    },
+    budget: {
+        items: [],
+        totalSpent: 0
+    },
+    guests: [],
+    checklist: [],
+    vendors: {
+        booked: 0,
+        total: 6
+    }
+};
+
+// Utility function for AJAX requests
+function makeAjaxRequest(data, callback) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', window.location.href, true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    callback(response);
+                } catch (e) {
+                    console.error('Error parsing response:', e);
+                    alert('Error processing server response');
+                }
+            } else {
+                alert('Server error occurred');
             }
-        };
+        }
+    };
+    
+    // Convert data object to URL-encoded string
+    const params = Object.keys(data).map(key => 
+        encodeURIComponent(key) + '=' + encodeURIComponent(data[key])
+    ).join('&');
+    
+    xhr.send(params);
+}
+
+// Load data on page load
+function loadWeddingData() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', window.location.href + '?getData=1', true);
+    
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    weddingData = response.data;
+                    
+                    // Update UI elements
+                    updateDashboardHeader();
+                    updateStatCards();
+                    updateBudgetDisplay();
+                    updateGuestDisplay();
+                    updateChecklistDisplay();
+                    
+                    // Populate profile form if data exists
+                    if (weddingData.profile.brideName) {
+                        document.getElementById('brideName').value = weddingData.profile.brideName || '';
+                        document.getElementById('groomName').value = weddingData.profile.groomName || '';
+                        document.getElementById('weddingDate').value = weddingData.profile.weddingDate || '';
+                        document.getElementById('totalBudget').value = weddingData.profile.totalBudget || 0;
+                        document.getElementById('expectedGuests').value = weddingData.profile.expectedGuests || 0;
+                    }
+                }
+            } catch (e) {
+                console.error('Error loading data:', e);
+            }
+        }
+    };
+    
+    xhr.send();
+}
+
+// Profile management
+function saveProfile() {
+    const brideName = document.getElementById('brideName').value;
+    const groomName = document.getElementById('groomName').value;
+    const weddingDate = document.getElementById('weddingDate').value;
+    const totalBudget = parseFloat(document.getElementById('totalBudget').value) || 0;
+    const expectedGuests = parseInt(document.getElementById('expectedGuests').value) || 0;
+    
+    if (!brideName || !groomName || !weddingDate) {
+        alert('Please fill in all required fields (Names and Wedding Date)');
+        return;
+    }
+    
+    const data = {
+        action: 'saveProfile',
+        brideName: brideName,
+        groomName: groomName,
+        weddingDate: weddingDate,
+        totalBudget: totalBudget,
+        expectedGuests: expectedGuests
+    };
+    
+    makeAjaxRequest(data, function(response) {
+        if (response.success) {
+            // Update local data
+            weddingData.profile = {
+                brideName,
+                groomName,
+                weddingDate,
+                totalBudget,
+                expectedGuests
+            };
+            
+            // Update UI elements
+            updateDashboardHeader();
+            updateStatCards();
+            
+            alert('Profile saved successfully!');
+            showSection('dashboard');
+        } else {
+            alert('Error saving profile: ' + response.message);
+        }
+    });
+}
+
+// Budget management
+function addBudgetItem() {
+    const category = document.getElementById('budgetCategory').value;
+    const amount = parseFloat(document.getElementById('budgetAmount').value);
+    const description = document.getElementById('budgetDescription').value;
+    
+    if (!amount || amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+    }
+    
+    const data = {
+        action: 'addBudgetItem',
+        category: category,
+        amount: amount,
+        description: description
+    };
+    
+    makeAjaxRequest(data, function(response) {
+        if (response.success) {
+            // Reload data to get updated budget
+            loadWeddingData();
+            closeBudgetModal();
+            document.getElementById('budgetForm').reset();
+            alert('Expense added successfully!');
+        } else {
+            alert('Error adding expense: ' + response.message);
+        }
+    });
+}
+
+// Guest management
+function addGuest() {
+    const name = document.getElementById('guestName').value;
+    const email = document.getElementById('guestEmail').value;
+    const phone = document.getElementById('guestPhone').value;
+    const plusOne = document.getElementById('guestPlusOne').value === 'yes';
+    
+    if (!name) {
+        alert('Please enter guest name');
+        return;
+    }
+    
+    const data = {
+        action: 'addGuest',
+        name: name,
+        email: email,
+        phone: phone,
+        plusOne: plusOne
+    };
+    
+    makeAjaxRequest(data, function(response) {
+        if (response.success) {
+            // Reload data to get updated guest list
+            loadWeddingData();
+            closeGuestModal();
+            document.getElementById('guestForm').reset();
+            alert('Guest added successfully!');
+        } else {
+            alert('Error adding guest: ' + response.message);
+        }
+    });
+}
+
+function updateGuestStatus(guestId, newStatus) {
+    const data = {
+        action: 'updateGuestStatus',
+        guestId: guestId,
+        newStatus: newStatus
+    };
+    
+    makeAjaxRequest(data, function(response) {
+        if (response.success) {
+            // Update local data
+            const guest = weddingData.guests.find(g => g.id === guestId);
+            if (guest) {
+                guest.status = newStatus;
+                updateGuestDisplay();
+                updateStatCards();
+            }
+        } else {
+            alert('Error updating guest status: ' + response.message);
+        }
+    });
+}
+
+// Checklist management
+function addCustomTaskToList() {
+    const taskName = document.getElementById('taskName').value;
+    const taskDate = document.getElementById('taskDate').value;
+    const taskPriority = document.getElementById('taskPriority').value;
+    
+    if (!taskName) {
+        alert('Please enter a task name');
+        return;
+    }
+    
+    const data = {
+        action: 'addCustomTask',
+        taskName: taskName,
+        taskDate: taskDate || getDateBefore(30),
+        taskPriority: taskPriority
+    };
+    
+    makeAjaxRequest(data, function(response) {
+        if (response.success) {
+            // Reload data to get updated checklist
+            loadWeddingData();
+            closeTaskModal();
+            document.getElementById('taskForm').reset();
+            alert('Task added successfully!');
+        } else {
+            alert('Error adding task: ' + response.message);
+        }
+    });
+}
+
+function toggleTaskCompletion(taskId) {
+    const task = weddingData.checklist.find(t => t.id === taskId);
+    const completed = task ? (task.completed ? 0 : 1) : 0;
+    
+    const data = {
+        action: 'toggleTaskCompletion',
+        taskId: taskId,
+        completed: completed
+    };
+    
+    makeAjaxRequest(data, function(response) {
+        if (response.success) {
+            // Update local data
+            if (task) {
+                task.completed = !task.completed;
+                updateChecklistDisplay();
+                updateStatCards();
+            }
+        } else {
+            alert('Error updating task: ' + response.message);
+        }
+    });
+}
+
+// Generate default checklist
+function generateChecklist() {
+    if (!weddingData.profile.weddingDate) {
+        alert('Please set your wedding date first');
+        showSection('profile');
+        return;
+    }
+    
+    const data = {
+        action: 'generateDefaultChecklist'
+    };
+    
+    makeAjaxRequest(data, function(response) {
+        if (response.success) {
+            loadWeddingData(); // Reload to get the new checklist
+            alert('Default checklist generated successfully!');
+        } else {
+            alert('Error generating checklist: ' + response.message);
+        }
+    });
+}
+
+// Vendor management functions
+function loadVendors(category) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', window.location.href + '?getVendors=1&category=' + encodeURIComponent(category), true);
+    
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    displayVendors(response.vendors, category);
+                }
+            } catch (e) {
+                console.error('Error loading vendors:', e);
+            }
+        }
+    };
+    
+    xhr.send();
+}
+
+function displayVendors(vendors, category) {
+    const sectionId = category + 'Content';
+    const section = document.getElementById(sectionId);
+    
+    if (!section) return;
+    
+    if (vendors.length === 0) {
+        section.innerHTML = '<div class="empty-state"><p>No vendors available for this category.</p></div>';
+        return;
+    }
+    
+    const vendorsHtml = vendors.map(vendor => `
+        <div class="vendor-card">
+            <div class="vendor-info">
+                <h4>${vendor.name}</h4>
+                <div class="vendor-rating">${'⭐'.repeat(Math.floor(vendor.rating))} (${vendor.rating}/5)</div>
+                <p>${vendor.description}</p>
+                ${vendor.contact_email ? `<p><strong>Email:</strong> ${vendor.contact_email}</p>` : ''}
+                ${vendor.contact_phone ? `<p><strong>Phone:</strong> ${vendor.contact_phone}</p>` : ''}
+            </div>
+            <div>
+                <div class="vendor-price">${vendor.price_min} - ${vendor.price_max}</div>
+                <button class="btn" onclick="contactVendor(${vendor.id}, '${vendor.name}')">Contact</button>
+                <button class="btn btn-secondary" onclick="bookVendor(${vendor.id}, '${category}')" style="margin-left: 10px;">Book</button>
+            </div>
+        </div>
+    `).join('');
+    
+    section.innerHTML = vendorsHtml;
+}
+
+function contactVendor(vendorId, vendorName) {
+    // This would typically open a contact modal or redirect to a contact form
+    alert(`Contact functionality for ${vendorName} would be implemented here. Vendor ID: ${vendorId}`);
+}
+
+function bookVendor(vendorId, vendorCategory) {
+    const data = {
+        action: 'bookVendor',
+        vendorId: vendorId,
+        vendorCategory: vendorCategory
+    };
+    
+    makeAjaxRequest(data, function(response) {
+        if (response.success) {
+            alert('Vendor booked successfully!');
+            loadWeddingData(); // Reload to update vendor count
+        } else {
+            alert('Error booking vendor: ' + response.message);
+        }
+    });
+}
+
+// Initialize dashboard on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadWeddingData();
+    
+    // Initialize other UI elements
+    updateDashboardHeader();
+    updateStatCards();
+});
+
+// Sidebar functionality
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    
+    sidebar.classList.toggle('collapsed');
+    mainContent.classList.toggle('expanded');
+}
+
+// Navigation functionality
+function showSection(sectionName) {
+    // Hide all sections
+    const sections = document.querySelectorAll('.content-section');
+    sections.forEach(section => section.classList.remove('active'));
+    
+    // Show selected section
+    const targetSection = document.getElementById(sectionName + '-section');
+    if (targetSection) {
+        targetSection.classList.add('active');
+    }
+    
+    // Update active nav link
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => link.classList.remove('active'));
+    
+    const activeLink = document.querySelector(`[onclick="showSection('${sectionName}')"]`);
+    if (activeLink) {
+        activeLink.classList.add('active');
+    }
+    
+    updateSectionContent(sectionName);
+}
+
+function toggleSubmenu(submenuId) {
+    const submenu = document.getElementById(submenuId + '-submenu');
+    const parentLink = document.querySelector(`[onclick="toggleSubmenu('${submenuId}')"]`);
+    
+    if (submenu) {
+        submenu.classList.toggle('active');
+        parentLink.classList.toggle('active');
+    }
+}
+
+function updateDashboardHeader() {
+    const profile = weddingData.profile;
+    if (profile.brideName && profile.groomName && profile.weddingDate) {
+        document.getElementById('userName').textContent = `${profile.brideName} & ${profile.groomName}`;
+        document.getElementById('userRole').textContent = `Wedding: ${new Date(profile.weddingDate).toLocaleDateString()}`;
+        document.getElementById('userAvatar').textContent = '💕';
+        
+        document.getElementById('dashboardTitle').textContent = `Welcome Back, ${profile.brideName} & ${profile.groomName}! 💕`;
+        document.getElementById('dashboardSubtitle').textContent = `Your wedding is on ${new Date(profile.weddingDate).toLocaleDateString()}. Let's make it perfect!`;
+        
+        // Show dashboard content, hide empty state
+        document.getElementById('dashboardEmptyState').style.display = 'none';
+        document.getElementById('dashboardContent').style.display = 'block';
+        
+        // Calculate days remaining
+        const today = new Date();
+        const weddingDate = new Date(profile.weddingDate);
+        const timeDiff = weddingDate.getTime() - today.getTime();
+        const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        document.getElementById('daysRemaining').textContent = daysDiff > 0 ? daysDiff : '0';
+    }
+}
+
+function updateStatCards() {
+    const profile = weddingData.profile;
+    
+    // Budget card
+    document.getElementById('totalBudget').textContent = `${profile.totalBudget.toLocaleString()}`;
+    const budgetUsed = profile.totalBudget > 0 ? (weddingData.budget.totalSpent / profile.totalBudget) * 100 : 0;
+    document.getElementById('budgetProgress').style.width = `${Math.min(budgetUsed, 100)}%`;
+    
+    // Guest card
+    const totalGuests = weddingData.guests.length;
+    const respondedGuests = weddingData.guests.filter(g => g.status !== 'pending').length;
+    document.getElementById('totalGuests').textContent = `${respondedGuests}/${totalGuests}`;
+    const guestProgress = totalGuests > 0 ? (respondedGuests / totalGuests) * 100 : 0;
+    document.getElementById('guestProgress').style.width = `${guestProgress}%`;
+    
+    // Tasks card
+    const completedTasks = weddingData.checklist.filter(task => task.completed).length;
+    const totalTasks = weddingData.checklist.length;
+    document.getElementById('completedTasks').textContent = `${completedTasks}/${totalTasks}`;
+    const taskProgress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+    document.getElementById('taskProgress').style.width = `${taskProgress}%`;
+    
+    // Vendors card
+    document.getElementById('bookedVendors').textContent = `${weddingData.vendors.booked}/${weddingData.vendors.total}`;
+    const vendorProgress = (weddingData.vendors.booked / weddingData.vendors.total) * 100;
+    document.getElementById('vendorProgress').style.width = `${vendorProgress}%`;
+}
+
+// Budget management
+function openBudgetModal() {
+    document.getElementById('budgetModal').style.display = 'block';
+}
+
+function closeBudgetModal() {
+    document.getElementById('budgetModal').style.display = 'none';
+    document.getElementById('budgetForm').reset();
+}
+
+function updateBudgetDisplay() {
+    const profile = weddingData.profile;
+    const budget = weddingData.budget;
+    
+    if (profile.totalBudget > 0) {
+        document.getElementById('budgetEmptyState').style.display = 'none';
+        document.getElementById('budgetContent').style.display = 'block';
+        
+        document.getElementById('displayTotalBudget').textContent = `${profile.totalBudget.toLocaleString()}`;
+        document.getElementById('totalSpent').textContent = `${budget.totalSpent.toLocaleString()}`;
+        document.getElementById('remainingBudget').textContent = `${(profile.totalBudget - budget.totalSpent).toLocaleString()}`;
+        
+        // Group budget items by category
+        const categories = {};
+        budget.items.forEach(item => {
+            if (!categories[item.category]) {
+                categories[item.category] = { total: 0, items: [] };
+            }
+            categories[item.category].total += item.amount;
+            categories[item.category].items.push(item);
+        });
+        
+        const categoriesHtml = Object.entries(categories).map(([category, data]) => `
+            <div class="budget-item">
+                <div class="budget-category">${category.charAt(0).toUpperCase() + category.slice(1)}</div>
+                <div class="budget-amount">${data.total.toLocaleString()}</div>
+            </div>
+        `).join('');
+        
+        document.getElementById('budgetCategories').innerHTML = categoriesHtml;
+    }
+}
+
+// Guest management
+function openGuestModal() {
+    document.getElementById('guestModal').style.display = 'block';
+}
+
+function closeGuestModal() {
+    document.getElementById('guestModal').style.display = 'none';
+    document.getElementById('guestForm').reset();
+}
+
+function updateGuestDisplay() {
+    if (weddingData.guests.length > 0) {
+        document.getElementById('guestsEmptyState').style.display = 'none';
+        document.getElementById('guestsContent').style.display = 'block';
+        
+        const totalInvited = weddingData.guests.length;
+        const confirmed = weddingData.guests.filter(g => g.status === 'confirmed').length;
+        const declined = weddingData.guests.filter(g => g.status === 'declined').length;
+        const pending = weddingData.guests.filter(g => g.status === 'pending').length;
+        const responded = confirmed + declined;
+        
+        document.getElementById('totalInvited').textContent = totalInvited;
+        document.getElementById('totalResponded').textContent = responded;
+        document.getElementById('confirmedGuests').textContent = confirmed;
+        document.getElementById('declinedGuests').textContent = declined;
+        document.getElementById('pendingGuests').textContent = pending;
+        
+        const guestsHtml = weddingData.guests.map(guest => `
+            <div class="guest-item">
+                <div>
+                    <strong>${guest.name}</strong>
+                    ${guest.plusOne ? ' (+1)' : ''}
+                    <br>
+                    <small>${guest.email || 'No email'}</small>
+                </div>
+                <div>
+                    <span class="guest-status status-${guest.status}">${guest.status.charAt(0).toUpperCase() + guest.status.slice(1)}</span>
+                    <select onchange="updateGuestStatus(${guest.id}, this.value)" style="margin-left: 10px;">
+                        <option value="pending" ${guest.status === 'pending' ? 'selected' : ''}>Pending</option>
+                        <option value="confirmed" ${guest.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                        <option value="declined" ${guest.status === 'declined' ? 'selected' : ''}>Declined</option>
+                    </select>
+                </div>
+            </div>
+        `).join('');
+        
+        document.getElementById('guestsList').innerHTML = guestsHtml;
+    }
+}
+
+function updateChecklistDisplay() {
+    if (weddingData.checklist.length > 0) {
+        document.getElementById('checklistEmptyState').style.display = 'none';
+        document.getElementById('checklistContent').style.display = 'block';
+        
+        const checklistHtml = weddingData.checklist.map((task) => `
+            <div class="checklist-item ${task.completed ? 'completed' : ''}">
+                <input type="checkbox" 
+                       class="checklist-checkbox" 
+                       id="task-${task.id}" 
+                       ${task.completed ? 'checked' : ''} 
+                       onchange="toggleTaskCompletion(${task.id})">
+                <label for="task-${task.id}">${task.task}</label>
+                <div style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
+                    <span class="task-priority priority-${task.priority}" style="padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">
+                        ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                    </span>
+                    <span class="task-due-date" style="font-size: 0.8rem; color: #666;">
+                        Due: ${new Date(task.dueDate).toLocaleDateString()}
+                    </span>
+                </div>
+            </div>
+        `).join('');
+        
+        document.getElementById('checklistItems').innerHTML = checklistHtml;
+    }
+}
+
+// Timeline generation
+function generateTimeline() {
+    if (!weddingData.profile.weddingDate) {
+        alert('Please set your wedding date first');
+        return;
+    }
+    
+    const timelineItems = [
+        { date: getDateBefore(365), event: "Book wedding venue" },
+        { date: getDateBefore(300), event: "Hire wedding photographer" },
+        { date: getDateBefore(180), event: "Choose and order wedding dress" },
+        { date: getDateBefore(120), event: "Book catering service" },
+        { date: getDateBefore(90), event: "Book makeup artist and hair stylist" },
+        { date: getDateBefore(60), event: "Send wedding invitations" },
+        { date: getDateBefore(45), event: "Plan honeymoon" },
+        { date: getDateBefore(30), event: "Finalize guest list" },
+        { date: getDateBefore(30), event: "Order wedding cake" },
+        { date: getDateBefore(15), event: "Buy wedding rings" }
+    ];
+    
+    const timelineHtml = timelineItems.map(item => `
+        <div class="timeline-item" style="padding: 15px; border-left: 3px solid #667eea; margin: 10px 0; background: #f8f9fa;">
+            <div class="timeline-date" style="font-weight: bold; color: #667eea;">${new Date(item.date).toLocaleDateString()}</div>
+            <div class="timeline-event" style="margin-top: 5px;">${item.event}</div>
+        </div>
+    `).join('');
+    
+    document.getElementById('timelineItems').innerHTML = timelineHtml;
+}
+
+// Vendor management
+function updateSectionContent(sectionName) {
+    switch (sectionName) {
+        case 'dashboard':
+            updateDashboardHeader();
+            updateStatCards();
+            break;
+        case 'budget':
+            updateBudgetDisplay();
+            break;
+        case 'guests':
+            updateGuestDisplay();
+            break;
+        case 'checklist':
+            updateChecklistDisplay();
+            break;
+        case 'schedule':
+            generateTimeline();
+            break;
+        case 'photographers':
+            loadVendors('photography');
+            break;
+        case 'venues':
+            loadVendors('venue');
+            break;
+        case 'catering':
+            loadVendors('catering');
+            break;
+        case 'decor':
+            loadVendors('decor');
+            break;
+        case 'dress':
+            loadVendors('dress');
+            break;
+        case 'makeup':
+            loadVendors('makeup');
+            break;
+    }
+}
+
+// Custom task management
+function openTaskModal() {
+    document.getElementById('taskModal').style.display = 'block';
+}
+
+function closeTaskModal() {
+    document.getElementById('taskModal').style.display = 'none';
+    document.getElementById('taskForm').reset();
+}
+
+function addCustomTask() {
+    openTaskModal();
+}
+
+function getDateBefore(days) {
+    if (weddingData.profile.weddingDate) {
+        const weddingDate = new Date(weddingData.profile.weddingDate);
+        const targetDate = new Date(weddingDate);
+        targetDate.setDate(weddingDate.getDate() - days);
+        return targetDate.toISOString().split('T')[0];
+    }
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    return date.toISOString().split('T')[0];
+}
 
         // Sidebar functionality
         function toggleSidebar() {
@@ -1925,22 +2982,32 @@ function logout() {
             return date.toISOString().split('T')[0]; // Return in YYYY-MM-DD format
         }
         function updateChecklistDisplay() {
-            if (weddingData.checklist.length > 0) {
-                document.getElementById('checklistEmptyState').style.display = 'none';
-                document.getElementById('checklistContent').style.display = 'block';
-                
-                const checklistHtml = weddingData.checklist.map((task, index) => `
-                    <div class="checklist-item">
-                        <input type="checkbox" id="task-${index}" ${task.completed ? 'checked' : ''} onchange="toggleTaskCompletion(${index})">
-                        <label for="task-${index}" class="${task.completed ? 'completed' : ''}">${task.task}</label>
-                        <span class="task-priority priority-${task.priority}">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
-                        <span class="task-due-date">Due: ${new Date(task.dueDate).toLocaleDateString()}</span>
-                    </div>
-                `).join('');
-                
-                document.getElementById('checklistItems').innerHTML = checklistHtml;
-            }
-        }
+    if (weddingData.checklist.length > 0) {
+        document.getElementById('checklistEmptyState').style.display = 'none';
+        document.getElementById('checklistContent').style.display = 'block';
+        
+        const checklistHtml = weddingData.checklist.map((task) => `
+            <div class="checklist-item ${task.completed ? 'completed' : ''}">
+                <input type="checkbox" 
+                       class="checklist-checkbox" 
+                       id="task-${task.id}" 
+                       ${task.completed ? 'checked' : ''} 
+                       onchange="toggleTaskCompletion(${task.id})">
+                <label for="task-${task.id}">${task.task}</label>
+                <div style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
+                    <span class="task-priority priority-${task.priority}" style="padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">
+                        ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                    </span>
+                    <span class="task-due-date" style="font-size: 0.8rem; color: #666;">
+                        Due: ${new Date(task.dueDate).toLocaleDateString()}
+                    </span>
+                </div>
+            </div>
+        `).join('');
+        
+        document.getElementById('checklistItems').innerHTML = checklistHtml;
+    }
+}
         function toggleTaskCompletion(index) {
             const task = weddingData.checklist[index];
             if (task) {

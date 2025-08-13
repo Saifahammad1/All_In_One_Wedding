@@ -82,3 +82,471 @@
 [2025-07-21 14:00:26] Email already exists Context: {"email":"ahammadsaif@gmail.com"}
 [2025-07-21 14:26:43] Database connection successful
 [2025-07-21 14:26:43] Invalid request method: GET
+[2025-07-22 04:11:33] Database connection successful
+[2025-07-22 04:11:33] Invalid request method: GET
+[2025-07-22 04:12:16] Database connection successful
+[2025-07-22 04:12:16] Registration attempt started Context: {"userType":"couple","firstName":"abu","lastName":"sayed","email":"john.doe@example.com","phone":"","weddingDate":"2025-07-30","guestCount":"","businessName":"","businessType":"","serviceArea":"","password":"Saif7243","confirmPassword":"Saif7243","newsletter":"1","terms":"on"}
+[2025-07-22 04:12:16] Basic fields extracted Context: {"userType":"couple","firstName":"abu","lastName":"sayed","email":"john.doe@example.com","phone":"empty","newsletter":1}
+[2025-07-22 04:12:16] Couple fields extracted Context: {"weddingDate":"2025-07-30","guestCount":""}
+[2025-07-22 04:12:16] All validation passed
+[2025-07-22 04:12:16] Email availability check passed
+[2025-07-22 04:12:16] Preparing to insert customer Context: {"firstName":"abu","lastName":"sayed","email":"john.doe@example.com","phone":null,"weddingDate":"2025-07-30","guestCount":null}
+[2025-07-22 04:12:16] Customer inserted successfully Context: {"customerId":"8"}
+[2025-07-22 04:12:16] Attempting to send verification email Context: {"email":"john.doe@example.com","firstName":"abu","userType":"couple"}
+[2025-07-22 04:12:18] Email sending result Context: {"success":false}
+[2025-07-22 04:12:18] Verification email sent Context: {"success":false}
+[2025-07-22 04:12:18] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-22 04:12:22] Database connection successful
+[2025-07-22 04:12:22] Registration attempt started Context: {"userType":"couple","firstName":"abu","lastName":"sayed","email":"john.doe@example.com","phone":"","weddingDate":"2025-07-30","guestCount":"","businessName":"","businessType":"","serviceArea":"","password":"Saif7243","confirmPassword":"Saif7243","newsletter":"1","terms":"on"}
+[2025-07-22 04:12:22] Basic fields extracted Context: {"userType":"couple","firstName":"abu","lastName":"sayed","email":"john.doe@example.com","phone":"empty","newsletter":1}
+[2025-07-22 04:12:22] Couple fields extracted Context: {"weddingDate":"2025-07-30","guestCount":""}
+[2025-07-22 04:12:22] All validation passed
+[2025-07-22 04:12:22] Email already exists Context: {"email":"john.doe@example.com"}
+[2025-07-29 18:09:23] Database connection successful
+[2025-07-29 18:09:23] Invalid request method: GET
+[2025-07-29 18:22:08] Database connection successful
+[2025-07-29 18:22:08] Invalid request method: GET
+[2025-07-29 18:22:47] Database connection successful
+[2025-07-29 18:22:47] Registration attempt started Context: {"userType":"couple","firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"","weddingDate":"","guestCount":"","businessName":"","businessType":"","serviceArea":"","password":"Abusayed1234","confirmPassword":"Abusayed1234","newsletter":"1","terms":"on"}
+[2025-07-29 18:22:47] Basic fields extracted Context: {"userType":"couple","firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"empty","newsletter":1}
+[2025-07-29 18:22:47] Couple fields extracted Context: {"weddingDate":"","guestCount":""}
+[2025-07-29 18:22:47] All validation passed
+[2025-07-29 18:22:47] Email availability check passed
+[2025-07-29 18:22:47] Preparing to insert customer Context: {"firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":null,"weddingDate":null,"guestCount":null}
+[2025-07-29 18:22:47] Customer inserted successfully Context: {"customerId":"9"}
+[2025-07-29 18:22:47] Attempting to send verification email Context: {"email":"abusayed@gmail.com","firstName":"abu","userType":"couple"}
+[2025-07-29 18:22:49] Email sending result Context: {"success":false}
+[2025-07-29 18:22:49] Verification email sent Context: {"success":false}
+[2025-07-29 18:22:49] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 18:22:52] Database connection successful
+[2025-07-29 18:22:52] Registration attempt started Context: {"userType":"couple","firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"","weddingDate":"","guestCount":"","businessName":"","businessType":"","serviceArea":"","password":"Abusayed1234","confirmPassword":"Abusayed1234","newsletter":"1","terms":"on"}
+[2025-07-29 18:22:52] Basic fields extracted Context: {"userType":"couple","firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"empty","newsletter":1}
+[2025-07-29 18:22:52] Couple fields extracted Context: {"weddingDate":"","guestCount":""}
+[2025-07-29 18:22:52] All validation passed
+[2025-07-29 18:22:52] Email already exists Context: {"email":"abusayed@gmail.com"}
+[2025-07-29 18:28:14] Database connection successful
+[2025-07-29 18:28:14] Invalid request method: GET
+[2025-07-29 18:31:20] Database connection successful
+[2025-07-29 18:31:20] Invalid request method: GET
+[2025-07-29 18:31:50] Database connection successful
+[2025-07-29 18:31:50] Registration attempt started Context: {"userType":"couple","firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"","weddingDate":"","guestCount":"","businessName":"","businessType":"","serviceArea":"","password":"Sayed1234","confirmPassword":"Sayed1234","newsletter":"1","terms":"on"}
+[2025-07-29 18:31:50] Basic fields extracted Context: {"userType":"couple","firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"empty","newsletter":1}
+[2025-07-29 18:31:50] Couple fields extracted Context: {"weddingDate":"","guestCount":""}
+[2025-07-29 18:31:50] All validation passed
+[2025-07-29 18:31:50] Email availability check passed
+[2025-07-29 18:31:50] Password hash debugging Context: {"original_password_length":9,"hashed_password_length":60,"hash_preview":"$2y$10$PuDQA.R15HN2z..."}
+[2025-07-29 18:31:50] Hash verification test Context: {"verification_successful":true}
+[2025-07-29 18:31:51] Preparing to insert customer Context: {"firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":null,"weddingDate":null,"guestCount":null}
+[2025-07-29 18:31:51] Customer inserted successfully Context: {"customerId":"10"}
+[2025-07-29 18:31:51] Attempting to send verification email Context: {"email":"abusayed@gmail.com","firstName":"abu","userType":"couple"}
+[2025-07-29 18:31:53] Email sending result Context: {"success":false}
+[2025-07-29 18:31:53] Verification email sent Context: {"success":false}
+[2025-07-29 18:31:53] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 18:32:34] Database connection successful
+[2025-07-29 18:32:34] Registration attempt started Context: {"userType":"vendor","firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"","weddingDate":"","guestCount":"","businessName":"Sayed Photography","businessType":"photographer","serviceArea":"","password":"Sayed1234","confirmPassword":"Sayed1234","newsletter":"1","terms":"on"}
+[2025-07-29 18:32:34] Basic fields extracted Context: {"userType":"vendor","firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"empty","newsletter":1}
+[2025-07-29 18:32:34] Vendor fields extracted Context: {"businessName":"Sayed Photography","businessType":"photographer","serviceArea":""}
+[2025-07-29 18:32:34] All validation passed
+[2025-07-29 18:32:34] Email availability check passed
+[2025-07-29 18:32:34] Password hash debugging Context: {"original_password_length":9,"hashed_password_length":60,"hash_preview":"$2y$10$By6znKvA94dtc..."}
+[2025-07-29 18:32:34] Hash verification test Context: {"verification_successful":true}
+[2025-07-29 18:32:34] Preparing to insert vendor Context: {"firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":null,"businessName":"Sayed Photography","businessType":"photographer","serviceArea":null}
+[2025-07-29 18:32:34] PDO Exception: SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'phone' cannot be null Context: {"code":"23000","file":"C:\\xampp\\htdocs\\All_In_One_Wedding\\register.php","line":329}
+[2025-07-29 18:40:15] Database connection successful
+[2025-07-29 18:40:15] Registration attempt started Context: {"userType":"vendor","firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"(018) 581-25221","weddingDate":"","guestCount":"","businessName":"Sayed Photography","businessType":"photographer","serviceArea":"","password":"Sayed1234","confirmPassword":"Sayed1234","newsletter":"1","terms":"on"}
+[2025-07-29 18:40:15] Basic fields extracted Context: {"userType":"vendor","firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"provided","newsletter":1}
+[2025-07-29 18:40:15] Vendor fields extracted Context: {"businessName":"Sayed Photography","businessType":"photographer","serviceArea":""}
+[2025-07-29 18:40:15] All validation passed
+[2025-07-29 18:40:15] Email availability check passed
+[2025-07-29 18:40:15] Preparing to insert vendor Context: {"firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"provided","businessName":"Sayed Photography","businessType":"photographer","serviceArea":null}
+[2025-07-29 18:40:15] Vendor inserted successfully Context: {"vendorId":"5"}
+[2025-07-29 18:40:15] Attempting to send verification email Context: {"email":"abusayed@gmail.com","firstName":"abu","userType":"vendor"}
+[2025-07-29 18:40:17] Email sending result Context: {"success":false}
+[2025-07-29 18:40:17] Verification email sent Context: {"success":false}
+[2025-07-29 18:40:17] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 18:41:45] Database connection successful
+[2025-07-29 18:41:45] Invalid request method: GET
+[2025-07-29 18:49:17] Database connection successful
+[2025-07-29 18:49:17] Registration attempt started Context: {"userType":"couple","firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"(018) 581-25221","weddingDate":"","guestCount":"","businessName":"","businessType":"","serviceArea":"","password":"Sayed1234","confirmPassword":"Sayed1234","newsletter":"1","terms":"on"}
+[2025-07-29 18:49:17] Basic fields extracted Context: {"userType":"couple","firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"provided","newsletter":1}
+[2025-07-29 18:49:17] Couple fields extracted Context: {"weddingDate":"","guestCount":""}
+[2025-07-29 18:49:17] All validation passed
+[2025-07-29 18:49:17] Email availability check passed
+[2025-07-29 18:49:17] Preparing to insert customer Context: {"firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"provided","weddingDate":null,"guestCount":null}
+[2025-07-29 18:49:17] Customer inserted successfully Context: {"customerId":"11"}
+[2025-07-29 18:49:17] Attempting to send verification email Context: {"email":"abusayed@gmail.com","firstName":"abu","userType":"couple"}
+[2025-07-29 18:49:19] Email sending result Context: {"success":false}
+[2025-07-29 18:49:19] Verification email sent Context: {"success":false}
+[2025-07-29 18:49:19] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 18:49:32] Database connection successful
+[2025-07-29 18:49:32] Registration attempt started Context: {"userType":"couple","firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"(018) 581-25221","weddingDate":"","guestCount":"","businessName":"","businessType":"","serviceArea":"","password":"Sayed1234","confirmPassword":"Sayed1234","newsletter":"1","terms":"on"}
+[2025-07-29 18:49:32] Basic fields extracted Context: {"userType":"couple","firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"provided","newsletter":1}
+[2025-07-29 18:49:32] Couple fields extracted Context: {"weddingDate":"","guestCount":""}
+[2025-07-29 18:49:32] All validation passed
+[2025-07-29 18:49:32] Email already exists Context: {"email":"abusayed@gmail.com"}
+[2025-07-29 18:57:50] Database connection successful
+[2025-07-29 18:57:50] Invalid request method: GET
+[2025-07-29 18:58:49] Database connection successful
+[2025-07-29 18:58:49] Registration attempt started Context: {"userType":"vendor","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"(018) 581-25221","weddingDate":"","guestCount":"","businessName":"Saif's Photography","businessType":"photographer","serviceArea":"","password":"Saif7243","confirmPassword":"Saif7243","terms":"on"}
+[2025-07-29 18:58:49] Basic fields extracted Context: {"userType":"vendor","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 18:58:49] Vendor fields extracted Context: {"businessName":"Saif's Photography","businessType":"photographer","serviceArea":""}
+[2025-07-29 18:58:49] All validation passed
+[2025-07-29 18:58:49] Email availability check passed
+[2025-07-29 18:58:49] Preparing to insert vendor Context: {"firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","businessName":"Saif's Photography","businessType":"photographer","serviceArea":null}
+[2025-07-29 18:58:49] Vendor inserted successfully Context: {"vendorId":"6"}
+[2025-07-29 18:58:49] Attempting to send verification email Context: {"email":"ahammadsaif@gmail.com","firstName":"Saif","userType":"vendor"}
+[2025-07-29 18:58:51] Email sending result Context: {"success":false}
+[2025-07-29 18:58:51] Verification email sent Context: {"success":false}
+[2025-07-29 18:58:51] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 18:58:54] Database connection successful
+[2025-07-29 18:58:54] Registration attempt started Context: {"userType":"vendor","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"(018) 581-25221","weddingDate":"","guestCount":"","businessName":"Saif's Photography","businessType":"photographer","serviceArea":"","password":"Saif7243","confirmPassword":"Saif7243","terms":"on"}
+[2025-07-29 18:58:54] Basic fields extracted Context: {"userType":"vendor","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 18:58:54] Vendor fields extracted Context: {"businessName":"Saif's Photography","businessType":"photographer","serviceArea":""}
+[2025-07-29 18:58:54] All validation passed
+[2025-07-29 18:58:54] Email already exists Context: {"email":"ahammadsaif@gmail.com"}
+[2025-07-29 19:00:27] Database connection successful
+[2025-07-29 19:00:27] Registration attempt started Context: {"userType":"vendor","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"(018) 581-25221","weddingDate":"","guestCount":"","businessName":"Saif's Photography","businessType":"photographer","serviceArea":"","password":"Saif7243","confirmPassword":"Saif7243","terms":"on"}
+[2025-07-29 19:00:27] Basic fields extracted Context: {"userType":"vendor","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 19:00:27] Vendor fields extracted Context: {"businessName":"Saif's Photography","businessType":"photographer","serviceArea":""}
+[2025-07-29 19:00:27] All validation passed
+[2025-07-29 19:00:27] Email already exists Context: {"email":"ahammadsaif@gmail.com"}
+[2025-07-29 19:04:09] Database connection successful
+[2025-07-29 19:04:09] Invalid request method: GET
+[2025-07-29 19:04:45] Database connection successful
+[2025-07-29 19:04:45] Registration attempt started Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"(018) 581-25221","weddingDate":"2025-08-08","guestCount":"","businessName":"","businessType":"","serviceArea":"","password":"Saif7243","confirmPassword":"Saif7243","terms":"on"}
+[2025-07-29 19:04:45] Basic fields extracted Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 19:04:45] Couple fields extracted Context: {"weddingDate":"2025-08-08","guestCount":""}
+[2025-07-29 19:04:45] All validation passed
+[2025-07-29 19:04:45] Email availability check passed
+[2025-07-29 19:04:45] Preparing to insert customer Context: {"firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","weddingDate":"2025-08-08","guestCount":null}
+[2025-07-29 19:04:45] PDO Exception: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '// <- USE password INSTEAD OF password_hash
+                email_verificati...' at line 8 Context: {"code":"42000","file":"C:\\xampp\\htdocs\\All_In_One_Wedding\\register.php","line":265}
+[2025-07-29 19:09:54] Database connection successful
+[2025-07-29 19:09:54] Registration attempt started Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"(018) 581-25221","weddingDate":"2025-08-08","guestCount":"","businessName":"","businessType":"","serviceArea":"","password":"Saif7243","confirmPassword":"Saif7243","terms":"on"}
+[2025-07-29 19:09:54] Basic fields extracted Context: {"userType":"couple","firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 19:09:54] Couple fields extracted Context: {"weddingDate":"2025-08-08","guestCount":""}
+[2025-07-29 19:09:54] All validation passed
+[2025-07-29 19:09:54] Email availability check passed
+[2025-07-29 19:09:54] Preparing to insert customer Context: {"firstName":"Saif","lastName":"Ahammad","email":"ahammadsaif@gmail.com","phone":"provided","weddingDate":"2025-08-08","guestCount":null,"password":"Saif7243"}
+[2025-07-29 19:09:54] Customer inserted successfully Context: {"customerId":"12"}
+[2025-07-29 19:09:54] Attempting to send verification email Context: {"email":"ahammadsaif@gmail.com","firstName":"Saif","userType":"couple"}
+[2025-07-29 19:09:56] Email sending result Context: {"success":false}
+[2025-07-29 19:09:56] Verification email sent Context: {"success":false}
+[2025-07-29 19:09:56] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 19:10:54] Database connection successful
+[2025-07-29 19:10:54] Invalid request method: GET
+[2025-07-29 19:11:39] Database connection successful
+[2025-07-29 19:11:39] Registration attempt started Context: {"userType":"vendor","firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"(019) 110-01010","weddingDate":"","guestCount":"","businessName":"Sayed Photography","businessType":"photographer","serviceArea":"","password":"Sayed1234","confirmPassword":"Sayed1234","terms":"on"}
+[2025-07-29 19:11:39] Basic fields extracted Context: {"userType":"vendor","firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 19:11:39] Vendor fields extracted Context: {"businessName":"Sayed Photography","businessType":"photographer","serviceArea":""}
+[2025-07-29 19:11:39] All validation passed
+[2025-07-29 19:11:39] Email availability check passed
+[2025-07-29 19:11:39] Preparing to insert vendor Context: {"firstName":"abu","lastName":"sayed","email":"abusayed@gmail.com","phone":"provided","businessName":"Sayed Photography","businessType":"photographer","serviceArea":null,"password":"Sayed1234"}
+[2025-07-29 19:11:39] Vendor inserted successfully Context: {"vendorId":"7"}
+[2025-07-29 19:11:39] Attempting to send verification email Context: {"email":"abusayed@gmail.com","firstName":"abu","userType":"vendor"}
+[2025-07-29 19:11:41] Email sending result Context: {"success":false}
+[2025-07-29 19:11:41] Verification email sent Context: {"success":false}
+[2025-07-29 19:11:41] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 19:34:52] Database connection successful
+[2025-07-29 19:34:52] Invalid request method: GET
+[2025-07-29 19:36:13] Database connection successful
+[2025-07-29 19:36:13] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(017) 129-99000","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 19:36:13] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 19:36:13] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 19:36:13] All validation passed
+[2025-07-29 19:36:13] Email availability check passed
+[2025-07-29 19:36:13] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal123"}
+[2025-07-29 19:36:13] Vendor inserted successfully Context: {"vendorId":"8"}
+[2025-07-29 19:36:13] Attempting to send verification email Context: {"email":"helal@gmail.com","firstName":"Helal","userType":"vendor"}
+[2025-07-29 19:36:15] Email sending result Context: {"success":false}
+[2025-07-29 19:36:15] Verification email sent Context: {"success":false}
+[2025-07-29 19:36:15] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 19:38:54] Database connection successful
+[2025-07-29 19:38:54] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(017) 129-99000","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 19:38:54] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 19:38:54] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 19:38:54] All validation passed
+[2025-07-29 19:38:54] Email already exists Context: {"email":"helal@gmail.com"}
+[2025-07-29 19:39:07] Database connection successful
+[2025-07-29 19:39:07] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(017) 129-99000","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 19:39:07] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 19:39:07] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 19:39:07] All validation passed
+[2025-07-29 19:39:07] Email availability check passed
+[2025-07-29 19:39:08] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal123"}
+[2025-07-29 19:39:08] Vendor inserted successfully Context: {"vendorId":"9"}
+[2025-07-29 19:39:08] Attempting to send verification email Context: {"email":"helal@gmail.com","firstName":"Helal","userType":"vendor"}
+[2025-07-29 19:39:10] Email sending result Context: {"success":false}
+[2025-07-29 19:39:10] Verification email sent Context: {"success":false}
+[2025-07-29 19:39:10] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 19:40:11] Database connection successful
+[2025-07-29 19:40:11] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(017) 129-99000","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 19:40:11] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 19:40:11] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 19:40:11] All validation passed
+[2025-07-29 19:40:11] Email availability check passed
+[2025-07-29 19:40:11] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal123"}
+[2025-07-29 19:40:11] Vendor inserted successfully Context: {"vendorId":"10"}
+[2025-07-29 19:40:11] Attempting to send verification email Context: {"email":"helal@gmail.com","firstName":"Helal","userType":"vendor"}
+[2025-07-29 19:40:13] Email sending result Context: {"success":false}
+[2025-07-29 19:40:13] Verification email sent Context: {"success":false}
+[2025-07-29 19:40:13] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 19:42:52] Database connection successful
+[2025-07-29 19:42:52] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(017) 129-99000","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 19:42:52] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 19:42:52] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 19:42:52] All validation passed
+[2025-07-29 19:42:52] Email availability check passed
+[2025-07-29 19:42:53] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal123"}
+[2025-07-29 19:42:53] Vendor inserted successfully Context: {"vendorId":"11"}
+[2025-07-29 19:42:53] Attempting to send verification email Context: {"email":"helal@gmail.com","firstName":"Helal","userType":"vendor"}
+[2025-07-29 19:42:55] Email sending result Context: {"success":false}
+[2025-07-29 19:42:55] Verification email sent Context: {"success":false}
+[2025-07-29 19:42:55] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 19:53:50] Database connection successful
+[2025-07-29 19:53:50] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(017) 129-99000","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 19:53:50] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 19:53:50] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 19:53:50] All validation passed
+[2025-07-29 19:53:50] Email availability check passed
+[2025-07-29 19:53:50] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal123"}
+[2025-07-29 19:53:50] Vendor inserted successfully Context: {"vendorId":"12"}
+[2025-07-29 19:53:50] Attempting to send verification email Context: {"email":"helal@gmail.com","firstName":"Helal","userType":"vendor"}
+[2025-07-29 19:53:52] Email sending result Context: {"success":false}
+[2025-07-29 19:53:52] Verification email sent Context: {"success":false}
+[2025-07-29 19:53:52] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 19:53:55] Database connection successful
+[2025-07-29 19:53:55] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(017) 129-99000","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 19:53:55] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 19:53:55] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 19:53:55] All validation passed
+[2025-07-29 19:53:55] Email already exists Context: {"email":"helal@gmail.com"}
+[2025-07-29 20:13:04] Database connection successful
+[2025-07-29 20:13:04] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(017) 129-99000","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 20:13:04] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 20:13:04] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 20:13:04] All validation passed
+[2025-07-29 20:13:04] Email already exists Context: {"email":"helal@gmail.com"}
+[2025-07-29 20:13:05] Database connection successful
+[2025-07-29 20:13:05] Invalid request method: GET
+[2025-07-29 20:18:16] Database connection successful
+[2025-07-29 20:18:16] Invalid request method: GET
+[2025-07-29 20:23:42] Database connection successful
+[2025-07-29 20:23:42] Invalid request method: GET
+[2025-07-29 20:24:16] Database connection successful
+[2025-07-29 20:24:17] Invalid request method: GET
+[2025-07-29 20:25:32] Database connection successful
+[2025-07-29 20:25:32] Invalid request method: GET
+[2025-07-29 20:25:59] Database connection successful
+[2025-07-29 20:25:59] Invalid request method: GET
+[2025-07-29 20:33:53] Database connection successful
+[2025-07-29 20:33:53] Invalid request method: GET
+[2025-07-29 20:35:03] Database connection successful
+[2025-07-29 20:35:03] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(880) 171-2999000","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal1234","confirmPassword":"Helal1234","terms":"on"}
+[2025-07-29 20:35:03] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 20:35:03] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 20:35:03] All validation passed
+[2025-07-29 20:35:03] Email availability check passed
+[2025-07-29 20:35:03] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal1234"}
+[2025-07-29 20:35:03] Vendor inserted successfully Context: {"vendorId":"13"}
+[2025-07-29 20:35:03] Attempting to send verification email Context: {"email":"helal@gmail.com","firstName":"Helal","userType":"vendor"}
+[2025-07-29 20:35:05] Email sending result Context: {"success":false}
+[2025-07-29 20:35:05] Verification email sent Context: {"success":false}
+[2025-07-29 20:35:05] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 20:45:01] Database connection successful
+[2025-07-29 20:45:01] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(880) 171-2999000","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal1234","confirmPassword":"Helal1234","terms":"on"}
+[2025-07-29 20:45:01] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 20:45:01] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 20:45:01] All validation passed
+[2025-07-29 20:45:01] Email availability check passed
+[2025-07-29 20:45:01] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal1234"}
+[2025-07-29 20:45:01] Vendor inserted successfully Context: {"vendorId":"14"}
+[2025-07-29 20:45:01] Verification email sent Context: {"success":true}
+[2025-07-29 20:45:01] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 20:45:12] Database connection successful
+[2025-07-29 20:45:12] Invalid request method: GET
+[2025-07-29 20:49:18] Database connection successful
+[2025-07-29 20:49:18] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(880) 180-8909090","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 20:49:18] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 20:49:18] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 20:49:18] All validation passed
+[2025-07-29 20:49:18] Email availability check passed
+[2025-07-29 20:49:18] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal123"}
+[2025-07-29 20:49:18] Vendor inserted successfully Context: {"vendorId":"15"}
+[2025-07-29 20:49:18] Attempting to send verification email Context: {"email":"helal@gmail.com","firstName":"Helal","userType":"vendor"}
+[2025-07-29 20:49:20] Email sending result Context: {"success":false}
+[2025-07-29 20:49:20] Verification email sent Context: {"success":false}
+[2025-07-29 20:49:20] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 20:53:43] Database connection successful
+[2025-07-29 20:53:43] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(880) 180-8909090","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 20:53:43] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 20:53:43] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 20:53:43] All validation passed
+[2025-07-29 20:53:43] Email availability check passed
+[2025-07-29 20:53:43] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal123"}
+[2025-07-29 20:53:43] Vendor inserted successfully Context: {"vendorId":"16"}
+[2025-07-29 20:53:43] Attempting to send verification email Context: {"email":"helal@gmail.com","firstName":"Helal","userType":"vendor"}
+[2025-07-29 20:53:45] Email sending result Context: {"success":false}
+[2025-07-29 20:53:45] Verification email sent Context: {"success":false}
+[2025-07-29 20:53:45] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 20:53:47] Database connection successful
+[2025-07-29 20:53:47] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(880) 180-8909090","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 20:53:47] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 20:53:47] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 20:53:47] All validation passed
+[2025-07-29 20:53:47] Email already exists Context: {"email":"helal@gmail.com"}
+[2025-07-29 20:54:53] Database connection successful
+[2025-07-29 20:54:53] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(880) 180-8909090","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 20:54:53] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 20:54:53] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 20:54:53] All validation passed
+[2025-07-29 20:54:53] Email availability check passed
+[2025-07-29 20:54:53] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal123"}
+[2025-07-29 20:54:53] Vendor inserted successfully Context: {"vendorId":"17"}
+[2025-07-29 20:54:56] Database connection successful
+[2025-07-29 20:54:56] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(880) 180-8909090","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 20:54:56] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 20:54:56] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 20:54:56] All validation passed
+[2025-07-29 20:54:56] Email availability check passed
+[2025-07-29 20:54:56] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal123"}
+[2025-07-29 20:54:56] Vendor inserted successfully Context: {"vendorId":"18"}
+[2025-07-29 20:55:21] Database connection successful
+[2025-07-29 20:55:21] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(880) 180-8909090","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 20:55:21] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 20:55:21] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 20:55:21] All validation passed
+[2025-07-29 20:55:21] Email availability check passed
+[2025-07-29 20:55:21] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal123"}
+[2025-07-29 20:55:21] Vendor inserted successfully Context: {"vendorId":"19"}
+[2025-07-29 20:55:21] Attempting to send verification email Context: {"email":"helal@gmail.com","firstName":"Helal","userType":"vendor"}
+[2025-07-29 20:55:23] Email sending result Context: {"success":false}
+[2025-07-29 20:55:23] Verification email sent Context: {"success":false}
+[2025-07-29 20:55:23] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 20:55:25] Database connection successful
+[2025-07-29 20:55:25] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(880) 180-8909090","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 20:55:25] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 20:55:25] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 20:55:25] All validation passed
+[2025-07-29 20:55:25] Email already exists Context: {"email":"helal@gmail.com"}
+[2025-07-29 20:57:24] Database connection successful
+[2025-07-29 20:57:24] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(880) 180-8909090","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 20:57:24] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 20:57:24] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 20:57:24] All validation passed
+[2025-07-29 20:57:24] Email availability check passed
+[2025-07-29 20:57:24] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal123"}
+[2025-07-29 20:57:24] Vendor inserted successfully Context: {"vendorId":"20"}
+[2025-07-29 20:57:24] Attempting to send verification email Context: {"email":"helal@gmail.com","firstName":"Helal","userType":"vendor"}
+[2025-07-29 20:57:26] Email sending result Context: {"success":false}
+[2025-07-29 20:57:26] Email verification failed to send, but account created Context: {"email":"helal@gmail.com"}
+[2025-07-29 20:57:26] Registration logging failed (this is optional): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_type' in 'field list'
+[2025-07-29 20:57:30] Database connection successful
+[2025-07-29 20:57:30] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(880) 180-8909090","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 20:57:30] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 20:57:30] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 20:57:30] All validation passed
+[2025-07-29 20:57:30] Email already exists Context: {"email":"helal@gmail.com"}
+[2025-07-29 21:00:23] Database connection successful
+[2025-07-29 21:00:23] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(880) 180-8909090","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 21:00:23] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 21:00:23] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 21:00:23] All validation passed
+[2025-07-29 21:00:23] Email availability check passed
+[2025-07-29 21:00:23] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal123"}
+[2025-07-29 21:00:23] Vendor inserted successfully Context: {"vendorId":"21"}
+[2025-07-29 21:00:23] Attempting to send verification email Context: {"email":"helal@gmail.com","firstName":"Helal","userType":"vendor"}
+[2025-07-29 21:00:25] Email sending result Context: {"success":false}
+[2025-07-29 21:00:25] Email verification failed to send, but account created Context: {"email":"helal@gmail.com"}
+[2025-07-29 21:01:00] Database connection successful
+[2025-07-29 21:01:00] Invalid request method: GET
+[2025-07-29 21:02:24] Database connection successful
+[2025-07-29 21:02:24] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(880) 198-0123432","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 21:02:24] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 21:02:24] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 21:02:24] All validation passed
+[2025-07-29 21:02:24] Email availability check passed
+[2025-07-29 21:02:24] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal123"}
+[2025-07-29 21:02:24] Vendor inserted successfully Context: {"vendorId":"22"}
+[2025-07-29 21:02:24] Attempting to send verification email Context: {"email":"helal@gmail.com","firstName":"Helal","userType":"vendor"}
+[2025-07-29 21:02:26] Email sending result Context: {"success":false}
+[2025-07-29 21:02:26] Email verification failed to send, but account created Context: {"email":"helal@gmail.com"}
+[2025-07-29 21:02:26] Transaction committed successfully
+[2025-07-29 21:02:57] Database connection successful
+[2025-07-29 21:02:57] Invalid request method: GET
+[2025-07-29 21:03:57] Database connection successful
+[2025-07-29 21:03:57] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(880) 198-0900800","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"hELAL123","confirmPassword":"hELAL123","terms":"on"}
+[2025-07-29 21:03:57] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 21:03:57] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 21:03:57] All validation passed
+[2025-07-29 21:03:57] Email availability check passed
+[2025-07-29 21:03:57] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"hELAL123"}
+[2025-07-29 21:03:57] Vendor inserted successfully Context: {"vendorId":"23"}
+[2025-07-29 21:03:57] Attempting to send verification email Context: {"email":"helal@gmail.com","firstName":"Helal","userType":"vendor"}
+[2025-07-29 21:03:59] Email sending result Context: {"success":false}
+[2025-07-29 21:03:59] Email verification failed to send, but account created Context: {"email":"helal@gmail.com"}
+[2025-07-29 21:03:59] Transaction committed successfully
+[2025-07-29 21:04:11] Database connection successful
+[2025-07-29 21:04:11] Invalid request method: GET
+[2025-07-29 21:04:41] Database connection successful
+[2025-07-29 21:04:41] Invalid request method: GET
+[2025-07-29 21:05:19] Database connection successful
+[2025-07-29 21:05:19] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(880) 198-0500300","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"hELAL123","confirmPassword":"hELAL123","terms":"on"}
+[2025-07-29 21:05:19] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 21:05:19] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 21:05:19] All validation passed
+[2025-07-29 21:05:19] Email availability check passed
+[2025-07-29 21:05:19] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"hELAL123"}
+[2025-07-29 21:05:19] Vendor inserted successfully Context: {"vendorId":"24"}
+[2025-07-29 21:05:19] Attempting to send verification email Context: {"email":"helal@gmail.com","firstName":"Helal","userType":"vendor"}
+[2025-07-29 21:05:21] Email sending result Context: {"success":false}
+[2025-07-29 21:05:21] Email verification failed to send, but account created Context: {"email":"helal@gmail.com"}
+[2025-07-29 21:05:21] Transaction committed successfully
+[2025-07-29 21:05:32] Database connection successful
+[2025-07-29 21:05:32] Invalid request method: GET
+[2025-07-29 21:06:24] Database connection successful
+[2025-07-29 21:06:24] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(018) 581-25221","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 21:06:24] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 21:06:24] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 21:06:24] All validation passed
+[2025-07-29 21:06:24] Email availability check passed
+[2025-07-29 21:06:24] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal123"}
+[2025-07-29 21:06:24] Vendor inserted successfully Context: {"vendorId":"25"}
+[2025-07-29 21:06:24] Attempting to send verification email Context: {"email":"helal@gmail.com","firstName":"Helal","userType":"vendor"}
+[2025-07-29 21:06:26] Email sending result Context: {"success":false}
+[2025-07-29 21:06:26] Email verification failed to send, but account created Context: {"email":"helal@gmail.com"}
+[2025-07-29 21:06:26] Transaction committed successfully
+[2025-07-29 21:06:48] Database connection successful
+[2025-07-29 21:06:48] Invalid request method: GET
+[2025-07-29 21:07:22] Database connection successful
+[2025-07-29 21:07:22] Registration attempt started Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"(018) 581-25221","weddingDate":"","guestCount":"","businessName":"Paragon Caterings","businessType":"catering","serviceArea":"","password":"Helal123","confirmPassword":"Helal123","terms":"on"}
+[2025-07-29 21:07:22] Basic fields extracted Context: {"userType":"vendor","firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","newsletter":0}
+[2025-07-29 21:07:22] Vendor fields extracted Context: {"businessName":"Paragon Caterings","businessType":"catering","serviceArea":""}
+[2025-07-29 21:07:22] All validation passed
+[2025-07-29 21:07:22] Email availability check passed
+[2025-07-29 21:07:22] Preparing to insert vendor Context: {"firstName":"Helal","lastName":"Uddin","email":"helal@gmail.com","phone":"provided","businessName":"Paragon Caterings","businessType":"catering","serviceArea":null,"password":"Helal123"}
+[2025-07-29 21:07:22] Vendor inserted successfully Context: {"vendorId":"26"}
+[2025-07-29 21:07:22] Attempting to send verification email Context: {"email":"helal@gmail.com","firstName":"Helal","userType":"vendor"}
+[2025-07-29 21:07:24] Email sending result Context: {"success":false}
+[2025-07-29 21:07:24] Email verification failed to send, but account created Context: {"email":"helal@gmail.com"}
+[2025-07-29 21:07:24] Transaction committed successfully
+[2025-07-31 17:53:15] Database connection successful
+[2025-07-31 17:53:15] Invalid request method: GET
+[2025-08-07 18:24:01] Database connection successful
+[2025-08-07 18:24:01] Invalid request method: GET
+[2025-08-08 14:51:25] Database connection successful
+[2025-08-08 14:51:25] Invalid request method: GET
+[2025-08-08 14:51:34] Database connection successful
+[2025-08-08 14:51:34] Invalid request method: GET
+[2025-08-08 14:54:00] Database connection successful
+[2025-08-08 14:54:00] Invalid request method: GET
+[2025-08-08 14:54:19] Database connection successful
+[2025-08-08 14:54:19] Invalid request method: GET
+[2025-08-08 14:55:18] Database connection successful
+[2025-08-08 14:55:18] Invalid request method: GET
+[2025-08-08 14:55:28] Database connection successful
+[2025-08-08 14:55:28] Invalid request method: GET
+[2025-08-08 14:55:45] Database connection successful
+[2025-08-08 14:55:45] Invalid request method: GET
+[2025-08-08 14:57:45] Database connection successful
+[2025-08-08 14:57:45] Invalid request method: GET

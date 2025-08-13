@@ -156,6 +156,14 @@ ob_end_clean();
             display: grid;
             grid-template-columns: 1fr 1fr;
             min-height: 650px;
+            transition: all 0.3s ease;
+            position: relative;
+            color: #333;
+            font-size: 16px;
+            font-weight: 400;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            overflow: hidden;
         }
 
         .logo-section {

@@ -244,7 +244,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'email' => $email,
                 'phone' => $phone ? 'provided' : null,
                 'weddingDate' => $weddingDate,
-                'guestCount' => $guestCount
+                'guestCount' => $guestCount,
+                'password' => $password
             ]);
             
             // Insert into customers table
@@ -255,12 +256,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 phone, 
                 wedding_date, 
                 guest_count,
-                password_hash, 
+                password,
                 email_verification_token,
                 newsletter_subscription,
                 created_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
-            
+
             $stmt = $pdo->prepare($sql);
             $result = $stmt->execute([
                 $firstName,
@@ -285,23 +286,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'phone' => $phone ? 'provided' : null,
                 'businessName' => $businessName,
                 'businessType' => $businessType,
-                'serviceArea' => $serviceArea
+                'serviceArea' => $serviceArea,
+                'password' => $password
             ]);
             
             // Insert into vendors table
-            $sql = "INSERT INTO vendors (
-                first_name, 
-                last_name, 
-                email, 
-                phone, 
-                business_name,
-                business_type,
-                service_area,
-                password_hash, 
-                email_verification_token,
-                newsletter_subscription,
-                created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
+           $sql = "INSERT INTO vendors (
+    first_name, 
+    last_name, 
+    email, 
+    phone, 
+    business_name,
+    business_type,
+    service_area,
+    password,
+    email_verification_token,
+    newsletter_subscription,
+    created_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
             
             $stmt = $pdo->prepare($sql);
             $result = $stmt->execute([
@@ -322,44 +324,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Send verification email
-        $verificationSent = sendVerificationEmail($email, $firstName, $verificationToken, $userType);
-        logError("Verification email sent", ['success' => $verificationSent]);
-        
-        // Optional: Log registration (if you have a registration_logs table)
-        try {
-            $tableName = ($userType === 'couple') ? 'customers' : 'vendors';
-            $logStmt = $pdo->prepare("
-                INSERT INTO registration_logs (
-                    user_id, 
-                    user_type,
-                    table_name,
-                    ip_address, 
-                    user_agent, 
-                    registration_time
-                ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-            ");
-            $logStmt->execute([
-                $userId,
-                $userType,
-                $tableName,
-                $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-                $_SERVER['HTTP_USER_AGENT'] ?? 'unknown'
-            ]);
-            logError("Registration logged successfully");
-        } catch (PDOException $e) {
-            // Don't fail the registration if logging fails
-            logError("Registration logging failed (this is optional): " . $e->getMessage());
-        }
-        
+        $verificationSent = @sendVerificationEmail($email, $firstName, $verificationToken, $userType);
+if (!$verificationSent) {
+    logError("Email verification failed to send, but account created", ['email' => $email]);
+}
+
+echo json_encode([
+    'success' => true,
+    'message' => 'Account created successfully!' . ($verificationSent ? ' Please check your email to verify your account.' : ''),
+    'user_id' => $userId,
+    'user_type' => $userType,
+    'verification_sent' => $verificationSent
+]);
         // Commit transaction
         $pdo->commit();
+        logError("Transaction committed successfully");
         
+    } catch (PDOException $e) {
+        // Rollback transaction on error
+        if ($pdo->inTransaction()) {
+            $pdo->rollback();
+        }
+        logError("PDO Exception: " . $e->getMessage(), [
+            'code' => $e->getCode(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ]);
         echo json_encode([
-            'success' => true,
-            'message' => 'Account created successfully! Please check your email to verify your account.',
-            'user_id' => $userId,
-            'user_type' => $userType,
-            'verification_sent' => $verificationSent
+            'success' => false,
+            'message' => 'Database error occurred. Please try again.',
+            'debug' => false // Don't expose database errors to user
         ]);
         
     } catch (PDOException $e) {
@@ -525,6 +519,14 @@ function sendVerificationEmail($email, $firstName, $token, $userType) {
             display: grid;
             grid-template-columns: 1fr 1fr;
             min-height: 700px;
+            transition: all 0.3s ease;
+            position: relative;
+            color: #333;
+            font-size: 16px;
+            font-weight: 400;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            overflow: hidden;
         }
 
         .logo-section {
@@ -631,31 +633,38 @@ function sendVerificationEmail($email, $firstName, $token, $userType) {
         }
 
         .user-type-options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
         }
 
-        .user-type-option {
-            position: relative;
-            cursor: pointer;
-        }
+.user-type-option {
+    position: relative;
+    cursor: pointer;
+}
 
-        .user-type-radio {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-        }
+.user-type-radio {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
 
-        .user-type-card {
-            border: 2px solid #e1e5e9;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
-            position: relative;
-        }
+.user-type-card {
+    border: 2px solid #e1e5e9;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: white;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
 
         .user-type-card:hover {
             border-color: #667eea;
@@ -680,6 +689,8 @@ function sendVerificationEmail($email, $firstName, $token, $userType) {
             font-weight: 600;
             font-size: 1.1rem;
             margin-bottom: 5px;
+            color: #333;
+            transition: color 0.3s ease;
         }
 
         .user-type-desc {
@@ -975,7 +986,7 @@ function sendVerificationEmail($email, $firstName, $token, $userType) {
 
                 <div class="form-group">
                     <input type="tel" class="form-input" id="phone" name="phone" placeholder=" ">
-                    <label class="form-label" for="phone">Phone Number (Optional)</label>
+                    <label class="form-label" for="phone">Phone Number</label>
                 </div>
 
                 <!-- Couple-specific fields -->
@@ -1173,25 +1184,30 @@ function sendVerificationEmail($email, $firstName, $token, $userType) {
                 })
                 .then(response => response.json())
                 .then(data => {
-                    // Hide loading
-                    loading.style.display = 'none';
-                    registerBtn.style.display = 'block';
+    loading.style.display = 'none';
+    registerBtn.style.display = 'block';
 
-                    if (data.success) {
-                        successMessage.textContent = data.message;
-                        successMessage.style.display = 'block';
-                        form.reset();
-                        // Optionally redirect after success
-                        setTimeout(() => {
-                            window.location.href = 'login.php?registered=1';
-                        }, 3000);
-                    } else {
-                        errorMessage.textContent = data.message;
-                        errorMessage.style.display = 'block';
-                        // Scroll to error message
-                        errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                })
+    if (data.success) {
+        successMessage.textContent = data.message;
+        successMessage.style.display = 'block';
+        form.reset();
+        
+        // Check if verification was actually sent
+        if (data.verification_sent === false) {
+            successMessage.textContent += ' (but verification email failed to send)';
+        }
+        
+        setTimeout(() => {
+            window.location.href = 'Index.php';
+        }, 3000);
+    } else {
+        // Show both the user message and debug message if available
+        errorMessage.textContent = data.message + 
+            (data.debug_message ? ` (Debug: ${data.debug_message})` : '');
+        errorMessage.style.display = 'block';
+        errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+})
                 .catch(error => {
                     console.error('Error:', error);
                     loading.style.display = 'none';
