@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['getData'])) {
 define('SMTP_HOST', 'smtp.yourdomain.com'); // Your SMTP server
 define('SMTP_PORT', 587); // Typically 587 for TLS, 465 for SSL
 define('SMTP_USERNAME', 'ahammadsaif@gmail.com'); // SMTP username
-define('SMTP_PASSWORD', 'your_smtp_password'); // SMTP password
+define('SMTP_PASSWORD', 'saif7243'); // SMTP password
 define('SMTP_ENCRYPTION', 'tls'); // 'tls' or 'ssl'
 define('SMTP_FROM_EMAIL', 'ahammadsaif@gmail.com');
 define('SMTP_FROM_NAME', 'All in One Wedding');

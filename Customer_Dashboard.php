@@ -50,8 +50,6 @@ function isLoggedIn() {
 
 // Placeholder for user ID (in a real app, this would come from a login system)
 function getCurrentUserId() {
-    // For this example, let's assume a static user ID or retrieve from session
-    // In a real application, this would be set upon successful login.
     if (!isset($_SESSION['user_id'])) {
         // This is a placeholder for development. In production, users should log in.
         $_SESSION['user_id'] = 1; // Assign a default user ID for testing
@@ -91,14 +89,14 @@ function saveProfile() {
     }
 
     $userId = getCurrentUserId();
-    $brideName = sanitize_input($_POST['brideName']);
-    $groomName = sanitize_input($_POST['groomName']);
-    $weddingDate = sanitize_input($_POST['weddingDate']);
-    $totalBudget = (float) sanitize_input($_POST['totalBudget']);
-    $expectedGuests = (int) sanitize_input($_POST['expectedGuests']);
+    $brideName = sanitize_input($_POST['bride_name']);
+    $groomName = sanitize_input($_POST['groom_name']);
+    $weddingDate = sanitize_input($_POST['wedding_date']);
+    $totalBudget = (float) sanitize_input($_POST['total_budget']);
+    $expectedGuests = (int) sanitize_input($_POST['expected_guests'] ?? '0');
 
     // Check if profile already exists for the user
-    $sql_check = "SELECT id FROM profiles WHERE user_id = ?";
+    $sql_check = "SELECT id FROM profiles WHERE user_id = $userId";
     if ($stmt_check = mysqli_prepare($link, $sql_check)) {
         mysqli_stmt_bind_param($stmt_check, "i", $userId);
         mysqli_stmt_execute($stmt_check);
@@ -106,7 +104,7 @@ function saveProfile() {
 
         if (mysqli_stmt_num_rows($stmt_check) == 1) {
             // Update existing profile
-            $sql = "UPDATE profiles SET bride_name = ?, groom_name = ?, wedding_date = ?, total_budget = ?, expected_guests = ? WHERE user_id = ?";
+            $sql = "UPDATE profiles SET bride_name = ?, groom_name = ?, wedding_date = ?, total_budget = ?, expected_guests = ? WHERE user_id = $userId";
             if ($stmt = mysqli_prepare($link, $sql)) {
                 mysqli_stmt_bind_param($stmt, "sssdii", $brideName, $groomName, $weddingDate, $totalBudget, $expectedGuests, $userId);
                 if (mysqli_stmt_execute($stmt)) {
@@ -152,7 +150,7 @@ function getWeddingData() {
     ];
 
     // Get Profile Data
-    $sql = "SELECT bride_name, groom_name, wedding_date, total_budget, expected_guests FROM profiles WHERE user_id = ?";
+    $sql = "SELECT bride_name, groom_name, wedding_date, total_budget, expected_guests FROM profiles WHERE user_id = $userId";
     if ($stmt = mysqli_prepare($link, $sql)) {
         mysqli_stmt_bind_param($stmt, "i", $userId);
         mysqli_stmt_execute($stmt);
@@ -170,7 +168,7 @@ function getWeddingData() {
     }
 
     // Get Budget Items
-    $sql = "SELECT id, category, amount, description, created_at FROM budget_items WHERE user_id = ? ORDER BY created_at DESC";
+    $sql = "SELECT id, category, amount, description, created_at FROM budget_items WHERE user_id = $userId ORDER BY created_at DESC";
     if ($stmt = mysqli_prepare($link, $sql)) {
         mysqli_stmt_bind_param($stmt, "i", $userId);
         mysqli_stmt_execute($stmt);
@@ -189,7 +187,7 @@ function getWeddingData() {
     }
 
     // Get Guests
-    $sql = "SELECT id, name, email, phone, plus_one, status FROM guests WHERE user_id = ? ORDER BY name ASC";
+    $sql = "SELECT id, name, email, phone, plus_one, status FROM guests WHERE user_id = $userId ORDER BY name ASC";
     if ($stmt = mysqli_prepare($link, $sql)) {
         mysqli_stmt_bind_param($stmt, "i", $userId);
         mysqli_stmt_execute($stmt);
@@ -208,7 +206,7 @@ function getWeddingData() {
     }
 
     // Get Checklist Items
-    $sql = "SELECT id, task, completed, priority, due_date FROM checklist_items WHERE user_id = ? ORDER BY due_date ASC, priority DESC";
+    $sql = "SELECT id, task, completed, priority, due_date FROM checklist_items WHERE user_id = $userId ORDER BY due_date ASC, priority DESC";
     if ($stmt = mysqli_prepare($link, $sql)) {
         mysqli_stmt_bind_param($stmt, "i", $userId);
         mysqli_stmt_execute($stmt);
@@ -226,7 +224,7 @@ function getWeddingData() {
     }
     
     // Get booked vendors count
-    $sql = "SELECT COUNT(DISTINCT vendor_category) FROM booked_vendors WHERE user_id = ?";
+    $sql = "SELECT COUNT(DISTINCT vendor_category) FROM booked_vendors WHERE user_id = $userId";
     if ($stmt = mysqli_prepare($link, $sql)) {
         mysqli_stmt_bind_param($stmt, "i", $userId);
         mysqli_stmt_execute($stmt);
@@ -445,7 +443,7 @@ function generateDefaultChecklist() {
     $userId = getCurrentUserId();
     
     // Check if user has a wedding date
-    $sql_date = "SELECT wedding_date FROM profiles WHERE user_id = ?";
+    $sql_date = "SELECT wedding_date FROM profiles WHERE user_id = $userId";
     $weddingDate = null;
     if ($stmt = mysqli_prepare($link, $sql_date)) {
         mysqli_stmt_bind_param($stmt, "i", $userId);
@@ -461,7 +459,7 @@ function generateDefaultChecklist() {
     }
     
     // Check if checklist already exists
-    $sql_check = "SELECT COUNT(*) FROM checklist_items WHERE user_id = ?";
+    $sql_check = "SELECT COUNT(*) FROM checklist_items WHERE user_id = $userId";
     if ($stmt = mysqli_prepare($link, $sql_check)) {
         mysqli_stmt_bind_param($stmt, "i", $userId);
         mysqli_stmt_execute($stmt);
@@ -548,6 +546,9 @@ function logout() {
             transition: all 0.3s ease;
             z-index: 1000;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .sidebar.collapsed {
@@ -700,38 +701,15 @@ function logout() {
             cursor: pointer;
             transition: transform 0.3s ease;
             position: absolute;
-            right: 20px;
             top: 50%;
-            transform: translateY(-50%);
+            right: 20px;
             z-index: 1001;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            background: rgba(255,255,255,0.1);
-            padding: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            transition: all 0.3s ease;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);  
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            transition: all 0.3s ease;
         }
 
         .toggle-btn:hover {
             transform: translateY(-50%) scale(1.1);
+            color: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.1);
         }
 
 
@@ -740,27 +718,15 @@ function logout() {
             transform: translateY(-50%);
             font-size: 1.2rem;
             color: rgba(255,255,255,0.8);
-            transition: transform 0.3s ease, color 0.3s ease;
-            position: absolute;
-            top: 50%;
-            right: 10px;
-            z-index: 1001;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            padding: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            transition: all 0.3s ease;
         }
         .sidebar.collapsed .toggle-btn:before {
             content: "\f0c9"; /* FontAwesome bars icon */
             font-family: "Font Awesome 5 Free";
             font-weight: 900;
             color: white;
+            display: block;
+            transition: all 0.3s ease;
+            position: absolute;
         }
         .sidebar.collapsed .toggle-btn:after {
             content: "\f00d"; /* FontAwesome times icon */
@@ -770,10 +736,16 @@ function logout() {
             display: none;
         }
         .sidebar.collapsed .toggle-btn:hover:before {
-            content: "\f00d"; /* Show close icon on hover */
+            content: "\f00d"; 
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            color: white;
+            display: block;
         }
         .sidebar.collapsed .toggle-btn:hover:after {
             content: "\f0c9"; /* Show menu icon on hover */
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
         }
         .sidebar.collapsed .toggle-btn:before {
             content: "\f0c9"; /* FontAwesome bars icon */
@@ -791,6 +763,9 @@ function logout() {
 
         .sidebar.collapsed .toggle-btn:hover {
             transform: translateY(-50%) scale(1.1);
+            color: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.1);
+
         }
 
         .user-info {
@@ -822,21 +797,14 @@ function logout() {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            color: #fff;
-            text-transform: uppercase;
-            border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
 
         .user-name {
             font-weight: 600;
             margin-bottom: 5px;
             transition: opacity 0.3s ease;
+            font-size: 1.1rem;
+            color: white;
         }
 
         .user-role {
@@ -879,11 +847,13 @@ function logout() {
         .nav-link:hover {
             background: rgba(255,255,255,0.1);
             border-left-color: rgba(255,255,255,0.5);
+            color: white;
         }
 
         .nav-link.active {
             background: rgba(255,255,255,0.2);
             border-left-color: white;
+            color: white;
         }
 
         .nav-icon {
@@ -910,6 +880,8 @@ function logout() {
 
         .submenu.active {
             max-height: 300px;
+            transition: max-height 0.5s ease;
+            padding: 10px 0;
         }
 
         .submenu-item {
@@ -1257,10 +1229,11 @@ function logout() {
         @media (max-width: 768px) {
             .sidebar {
                 width: 60px;
+                position: fixed;
             }
             
             .main-content {
-                margin-left: 60px;
+                margin-left: 30px;
             }
             
             .dashboard-title {

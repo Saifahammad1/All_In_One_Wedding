@@ -2,8 +2,6 @@
 session_start();
 require_once 'config.php'; // Your database configuration file
 
-
-
 // Create advertisements table if it doesn't exist
 try {
     $createTableQuery = "

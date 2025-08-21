@@ -20,8 +20,6 @@ try {
     ];
     
     // Check if tables exist and fetch data accordingly
-    
-    // Total Customers
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
@@ -580,7 +578,7 @@ try {
                     <h2 class="section-title">User Management</h2>
                 </div>
                 <div class="action-buttons">
-                    <a href="manage_users.php" class="action-btn">
+                    <a href="View_all_Users.php" class="action-btn">
                         <span>👀</span> View All Users
                     </a>
                     <a href="approve_vendors.php" class="action-btn">
